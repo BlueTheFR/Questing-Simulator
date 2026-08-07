@@ -1197,7 +1197,7 @@ function doShopping() {
   let bought = 0;
   for (const slot in SLOT_LABELS) {
     const item = makeShopItemForSlot(slot);
-    const price = Math.max(1, Math.floor((item.dmg + item.armor) * 3 + item.level * 2) * discount);
+    const price = Math.max(1, Math.round(Math.floor((item.dmg + item.armor) * 3 + item.level * 2) * discount));
     if (game.gold >= price) {
       game.gold -= price;
       const old = game.equipped[slot];
@@ -1557,7 +1557,7 @@ function render() {
   renderPlot();
 }
 
-function formatGold(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+function formatGold(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
 
 function renderQuest() {
   const box = document.getElementById("questBox");
@@ -1725,6 +1725,7 @@ function migrateSave(g) {
   if (g.weatherTimer == null) g.weatherTimer = 300;
   if (g.shopping == null) g.shopping = false;
   if (g.pendingEvent == null) g.pendingEvent = null;
+  if (typeof g.gold === "number") g.gold = Math.round(g.gold);
   if (g.mp == null) g.mp = 20 + (g.stats ? g.stats.wis * 4 : 20);
   if (g.quest && !g.quest.need) {
     g.quest.need = randBetween(10, 25);
