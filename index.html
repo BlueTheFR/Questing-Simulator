@@ -275,6 +275,7 @@
         <div class="gbox gbox-inner">
           <div class="gtitle">Héros</div>
           <div class="prog-label" style="margin-top:0;margin-bottom:4px;"><span>Vie</span><span id="hpText">0 / 0</span></div>
+          <div class="prog-label" style="margin-bottom:4px;"><span>Mana</span><span id="mpText">0 / 0</span></div>
           <div style="margin-top:8px;">
             <div class="stat-row"><span class="label">Niveau</span><span class="val" id="statLevel">1</span></div>
             <div class="stat-row"><span class="label">Force (FOR)</span><span class="val" id="statStr">0</span></div>
@@ -289,7 +290,6 @@
             <div class="stat-row"><span class="label">Quêtes finies</span><span class="val" id="statQuests">0</span></div>
             <div class="stat-row"><span class="label">Or</span><span class="val gold" id="statGold">0</span></div>
             <div class="stat-row"><span class="label">Objets obtenus</span><span class="val" id="statItems">0</span></div>
-            <div class="stat-row"><span class="label">Morts</span><span class="val" id="statDeaths">0</span></div>
           </div>
           <div class="stats-line">Temps de partie : <span id="statTime">0s</span></div>
         </div>
@@ -605,8 +605,7 @@ const RETREAT_MSGS = [
 
 const MIN_ACTION = 3;       // durée d'action minimale (s)
 const MAX_ACTION = 25;      // durée d'action maximale (s)
-const MAX_KILL_TARGET = 8;  // cap sur le nombre de monstres à exterminer
-const MAX_QUEST_TIME = 300; // cap sur la durée d'une quête (5 min)
+const XP_SCALE = 0.15;      // réduit massivement l'XP gagnée (jeu très long)
 const SAVE_KEY = "questingSimulatorWin95Save";
 const SAVE_INTERVAL = 30000; // 30 secondes
 const TICK_MS = 1000;
@@ -799,12 +798,13 @@ function newGame() {
     level: 1,
     xp: 0,
     hp: 100, maxHp: 100,
+    mp: 20,
+    shopping: false,
     gold: 0,
     stats: { str: 0, con: 0, dex: 0, int: 0, wis: 0, cha: 0 },
     kills: 0,
     questsDone: 0,
     itemsFound: 0,
-    deaths: 0,
     totalTime: 0,
     quest: null,
     questLog: [],
@@ -829,6 +829,7 @@ function newGame() {
   });
   game.maxHp = 50 + game.stats.con * 8;
   game.hp = game.maxHp;
+  game.mp = 20 + game.stats.wis * 4;
   startQuest();
   startNextAction();
   checkSpellLearning();
@@ -853,49 +854,42 @@ function startQuest() {
     text: "",
     target: "",
     count: 0,
-    need: 0,
-    duration: MAX_QUEST_TIME,
-    time: 0
+    need: randBetween(10, 25)
   };
 
   if (type === "exterminate") {
     const mons = pick(monsterPool());
     q.target = mons.name;
-    q.need = Math.min(MAX_KILL_TARGET, randBetween(2, 2 + Math.floor(game.level / 3)));
-    q.text = "Extermine " + q.need + " " + monsterPlural(mons.name) + ".";
-    // Plus il y a de monstres, plus la quête est longue (~20-25 s par monstre).
-    q.duration = Math.min(MAX_QUEST_TIME, q.need * randBetween(20, 26) + randBetween(0, 30));
+    q.text = "Extermine des " + monsterPlural(mons.name) + ".";
   } else if (type === "deliver") {
     const it = pick(QUEST_ITEMS);
     q.target = pick(DELIVER_RECIPIENTS);
     q.text = "Remets " + it.name + " à " + q.target + ".";
-    q.duration = Math.min(MAX_QUEST_TIME, it.t + game.level * 3 + randBetween(10, 45));
   } else if (type === "fetch") {
     const it = pick(QUEST_ITEMS);
     q.text = "Rapporte " + it.name + ".";
-    q.duration = Math.min(MAX_QUEST_TIME, it.t + game.level * 3 + randBetween(10, 40));
   } else { // seek
     const it = pick(QUEST_ITEMS);
     q.text = "Cherche " + it.name + ".";
-    q.duration = Math.min(MAX_QUEST_TIME, it.t + game.level * 3 + randBetween(10, 40));
   }
 
   game.quest = q;
   game.questLog.push({ text: q.text, done: false });
+  if (game.questLog.length > 200) game.questLog.splice(0, game.questLog.length - 200);
 }
 
 function completeQuest() {
   game.questsDone += 1;
-  const bonusXp = Math.round((60 + game.level * 28) * xpMultiplier());
+  const bonusXp = Math.max(1, Math.round((60 + game.level * 28) * xpMultiplier() * XP_SCALE));
   const bonusGold = 30 + game.level * 12;
   game.xp += bonusXp;
   game.gold += bonusGold;
   log("quest", "Quête terminée : « " + game.quest.text + " » (+" + bonusXp + " XP, +" + bonusGold + " or).");
   questReward();
-  sellAllInventory();
   if (game.questLog.length) game.questLog[game.questLog.length - 1].done = true;
-  startQuest();
-  log("quest", "Nouvelle quête : « " + game.quest.text + " » (durée ~" + game.quest.duration + "s).");
+  game.quest = null;
+  game.shopping = true;
+  startNextAction();
   checkLevelUp();
 }
 
@@ -1021,7 +1015,9 @@ function tick() {
   }
 
   game.actionTimer += 1;
-  game.quest.time += 1;
+
+  const maxMp = 20 + game.stats.wis * 4;
+  if (game.mp < maxMp) game.mp = Math.min(maxMp, game.mp + 5);
 
   if (game.hp < game.maxHp && Math.random() < 0.3) {
     const regen = Math.ceil(game.maxHp * 0.04) + Math.ceil(game.stats.con / 3);
@@ -1038,8 +1034,7 @@ function tick() {
   }
 
   const q = game.quest;
-  const done = q.type === "exterminate" ? (q.count >= q.need || q.time >= q.duration) : q.time >= q.duration;
-  if (done) {
+  if (q && q.count >= q.need) {
     if (!actionResolved) {
       game.actionTimer = game.actionDuration;
       resolveAction();
@@ -1061,6 +1056,15 @@ function applyPerSecondDamage() {
 }
 
 function resolveAction() {
+  if (game.shopping) {
+    doShopping();
+    game.shopping = false;
+    startQuest();
+    log("quest", "Nouvelle quête : « " + game.quest.text + " ».");
+    startNextAction();
+    return;
+  }
+
   const mons = game.actionMonster;
   if (!mons) { startNextAction(); return; }
 
@@ -1069,15 +1073,13 @@ function resolveAction() {
   const heroWins = Math.random() < Math.max(0.08, Math.min(0.97, chance));
 
   if (heroWins) {
-    const xpGain = Math.max(1, Math.round((mons.lvl * 4 + 3) * (0.8 + Math.random() * 0.6) * xpMultiplier()));
+    const xpGain = Math.max(1, Math.round((mons.lvl * 4 + 3) * (0.8 + Math.random() * 0.6) * xpMultiplier() * XP_SCALE));
     const goldGain = randBetween(mons.gold[0], mons.gold[1]);
     game.xp += xpGain;
     game.gold += goldGain;
     game.kills += 1;
     game.killsByMonster[mons.name] = (game.killsByMonster[mons.name] || 0) + 1;
-    if (game.quest.type === "exterminate" && game.quest.target === mons.name) {
-      game.quest.count += 1;
-    }
+    if (game.quest) game.quest.count += 1;
     log("combat", "Le héros " + pick(KILL_VERBS) + " " + article(mons.name) + " " + mons.name + " (+" + xpGain + " XP, +" + goldGain + " or).");
     maybeDropItem(mons);
     checkLevelUp();
@@ -1088,12 +1090,39 @@ function resolveAction() {
   if (!game.dead) startNextAction();
 }
 
+function doShopping() {
+  const sold = game.inventory.length;
+  sellAllInventory();
+  const discount = 1 - Math.min(0.5, game.stats.cha * 0.01);
+  let bought = 0;
+  let attempts = 0;
+  while (attempts < 200) {
+    attempts += 1;
+    const gearLvl = game.level + Math.floor(game.stats.cha / 4);
+    const item = generateEquip(gearLvl);
+    const cost = Math.max(10, Math.round((item.dmg * 5 + item.armor * 3 + item.level * 4) * discount));
+    if (cost > game.gold) break;
+    game.gold -= cost;
+    game.itemsFound += 1;
+    if (autoEquip(item)) bought += 1;
+    else game.inventory.push(item);
+  }
+  log("loot", "Boutique : " + sold + " objet(s) vendu(s), " + bought + " pièce(s) achetée(s) (charisme = meilleures pièces).");
+}
+
 function monsterPool() {
   const pool = MONSTERS.filter(function (m) { return m.lvl <= game.level + 2 && m.lvl >= Math.max(1, game.level - 3); });
   return pool.length ? pool : MONSTERS;
 }
 
 function startNextAction() {
+  if (game.shopping) {
+    game.actionMonster = null;
+    game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
+    game.actionTimer = 0;
+    game.actionText = "Se rend à la boutique...";
+    return;
+  }
   const mons = pick(monsterPool());
   game.actionMonster = mons;
   game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
@@ -1111,7 +1140,6 @@ function article(name) {
 
 function die() {
   game.dead = true;
-  game.deaths += 1;
   game.deathTimer = 8;
   const lostGold = Math.floor(game.gold * 0.1);
   game.gold -= lostGold;
@@ -1301,14 +1329,15 @@ function render() {
   document.getElementById("actionTime").textContent = Math.min(g.actionTimer, g.actionDuration) + "s / " + g.actionDuration + "s";
   renderSeg("actionBar", 10, Math.min(10, g.actionTimer / g.actionDuration * 10));
 
-  document.getElementById("questShort").textContent = g.quest.text;
-  document.getElementById("questTime").textContent = Math.min(g.quest.time, g.quest.duration) + "s / " + g.quest.duration + "s";
-  renderSeg("questBar", 10, g.quest.time / g.quest.duration * 10);
+  document.getElementById("questShort").textContent = g.quest ? g.quest.text : "En route vers la boutique...";
+  document.getElementById("questTime").textContent = g.quest ? QUEST_TYPE_LABELS[g.quest.type] : "";
+  renderSeg("questBar", 10, g.quest ? Math.min(10, g.quest.count / g.quest.need * 10) : 0);
 
   document.getElementById("xpText").textContent = g.xp + " / " + needed + " XP";
   renderSeg("xpBar", 10, g.xp / needed * 10);
 
   document.getElementById("hpText").textContent = Math.max(0, Math.round(g.hp)) + " / " + g.maxHp;
+  document.getElementById("mpText").textContent = Math.round(g.mp) + " / " + (20 + g.stats.wis * 4);
 
   document.getElementById("statLevel").textContent = g.level;
   document.getElementById("statStr").textContent = g.stats.str;
@@ -1323,12 +1352,12 @@ function render() {
   document.getElementById("statQuests").textContent = g.questsDone;
   document.getElementById("statGold").textContent = formatGold(g.gold);
   document.getElementById("statItems").textContent = g.itemsFound;
-  document.getElementById("statDeaths").textContent = g.deaths;
   document.getElementById("statTime").textContent = fmtTime(g.totalTime);
 
   let st;
   if (g.dead) st = "Vous êtes mort... résurrection dans " + Math.max(0, g.deathTimer) + "s";
-  else st = "Quête : « " + g.quest.text + " » — il reste " + Math.max(0, g.quest.duration - g.quest.time) + "s";
+  else if (g.shopping) st = "Se rend à la boutique...";
+  else st = "Action : " + (g.actionText || "en exploration...");
   document.getElementById("statusText").textContent = st;
 
   renderQuest();
@@ -1344,24 +1373,23 @@ function renderQuest() {
   const box = document.getElementById("questBox");
   const g = game;
   box.innerHTML = "";
-  const q = document.createElement("div");
-  q.className = "quest-box";
 
-  let objective;
-  if (g.quest.type === "exterminate") {
-    objective = "Objectif : " + g.quest.count + " / " + g.quest.need + " " + monsterPlural(g.quest.target) + " éliminés";
-  } else if (g.quest.type === "deliver") {
-    objective = "Objectif : remettre l'objet à " + g.quest.target;
-  } else {
-    objective = "Objectif : trouver l'objet demandé";
+  if (!g.quest) {
+    const d = document.createElement("div");
+    d.className = "quest-box";
+    d.innerHTML = '<div class="quest-name">En route vers la boutique...</div>' +
+      '<div class="quest-desc">Le héros va vendre ses trouvailles et acheter de meilleures pièces.</div>';
+    box.appendChild(d);
+    return;
   }
 
+  const q = document.createElement("div");
+  q.className = "quest-box";
   q.innerHTML =
     '<div class="quest-name">[' + QUEST_TYPE_LABELS[g.quest.type] + '] « ' + esc(g.quest.text) + ' »</div>' +
-    '<div class="quest-desc">Zone : ' + esc(zoneName(g.level)) + " — " + esc(objective) + "</div>" +
-    '<div class="quest-reward">Récompense : ~' + Math.round((60 + g.level * 28) * xpMultiplier()) + " XP, ~" + (30 + g.level * 12) + " or + bonus aléatoire</div>" +
-    '<div class="prog-label" style="margin-top:6px;"><span>Temps restant</span><span>' + Math.max(0, g.quest.duration - g.quest.time) + "s</span></div>" +
-    '<div class="segbar">' + makeSegs(10, Math.floor(g.quest.time / g.quest.duration * 10)) + '</div>';
+    '<div class="quest-desc">Zone : ' + esc(zoneName(g.level)) + "</div>" +
+    '<div class="quest-reward">Récompense : ~' + Math.max(1, Math.round((60 + g.level * 28) * xpMultiplier() * XP_SCALE)) + " XP, ~" + (30 + g.level * 12) + " or + bonus aléatoire</div>" +
+    '<div class="segbar" style="margin-top:6px;">' + makeSegs(10, Math.min(10, g.quest.count / g.quest.need * 10)) + '</div>';
   box.appendChild(q);
 }
 
@@ -1408,7 +1436,9 @@ function renderInventory() {
     div.className = "item";
     const sub = it.kind === "junk"
       ? "Objet absurde"
-      : SLOT_LABELS[it.slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "");
+      : it.kind === "unique"
+        ? "Objet unique"
+        : SLOT_LABELS[it.slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "");
     div.innerHTML =
       '<div class="iname">' + esc(it.name) + "</div>" +
       '<div class="isub">' + sub + "</div>";
@@ -1442,29 +1472,39 @@ function renderEquipment() {
   }
 }
 
+function actHours(n) {
+  if (n === 1) return 1;
+  if (n === 2) return 5;
+  if (n === 3) return 10;
+  if (n === 4) return 20;
+  if (n === 5) return 35;
+  if (n === 6) return 50;
+  if (n === 7) return 70;
+  if (n === 8) return 90;
+  if (n === 9) return 100;
+  return 100 * (n - 8); // acte 10 = 200 h, 11 = 300 h, ... à l'infini
+}
+
 function renderPlot() {
   const box = document.getElementById("plotDev");
   box.innerHTML = "";
-  if (!game.questLog || !game.questLog.length) {
-    const d = document.createElement("div");
-    d.className = "empty";
-    d.textContent = "Aucune quête pour l'instant.";
-    box.appendChild(d);
-    return;
-  }
-  game.questLog.slice(-150).reverse().forEach(function (entry) {
+  const hours = game.totalTime / 3600;
+  let done = 0;
+  while (actHours(done + 1) <= hours) done += 1;
+  const total = done + 1;
+  for (let i = 1; i <= total; i++) {
     const div = document.createElement("div");
     div.className = "plot-entry";
     const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.checked = !!entry.done;
+    cb.checked = i <= done;
     cb.disabled = true;
     const span = document.createElement("span");
-    span.textContent = entry.text;
+    span.textContent = i <= done ? "Acte " + i + " — terminé" : "Acte " + i + " — en cours";
     div.appendChild(cb);
     div.appendChild(span);
     box.appendChild(div);
-  });
+  }
 }
 
 function esc(s) {
@@ -1479,6 +1519,21 @@ function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(game));
   } catch (e) { /* stockage indisponible */ }
+}
+
+function migrateSave(g) {
+  if (!Array.isArray(g.questLog)) {
+    g.questLog = g.quest ? [{ text: g.quest.text, done: false }] : [];
+  }
+  if (!g.killsByMonster) g.killsByMonster = {};
+  if (!g.gearPlus) g.gearPlus = {};
+  if (g.shopping == null) g.shopping = false;
+  if (g.mp == null) g.mp = 20 + (g.stats ? g.stats.wis * 4 : 20);
+  if (g.quest && !g.quest.need) {
+    g.quest.need = randBetween(10, 25);
+    if (g.quest.count == null) g.quest.count = 0;
+  }
+  return g;
 }
 
 function exportSave() {
@@ -1503,8 +1558,8 @@ function importSave(file) {
   reader.onload = function () {
     try {
       const parsed = JSON.parse(reader.result);
-      if (parsed && parsed.version === VERSION && parsed.name && parsed.quest) {
-        game = parsed;
+      if (parsed && parsed.version === VERSION && parsed.name && parsed.stats) {
+        game = migrateSave(parsed);
         save();
         document.getElementById("topTitle").textContent = "Questing Simulator";
         document.getElementById("charCreation").style.display = "none";
@@ -1528,12 +1583,7 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.version === VERSION && parsed.name) {
-        game = parsed;
-        if (!Array.isArray(game.questLog)) {
-          game.questLog = game.quest ? [{ text: game.quest.text, done: false }] : [];
-        }
-        if (!game.killsByMonster) game.killsByMonster = {};
-        if (!game.gearPlus) game.gearPlus = {};
+        game = migrateSave(parsed);
         rebuildLogFromSave();
         log("system", "Aventure chargée. Bon retour, " + game.name + " !");
         document.getElementById("topTitle").textContent = "Questing Simulator";
