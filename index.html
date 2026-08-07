@@ -68,6 +68,8 @@
   }
   .seg { flex: 1 1 0; height: 14px; background: #fff; border: 1px solid #c0c0c0; }
   .seg.on { background: #0000ff; border-color: #0000ff; }
+  .seg.part { position: relative; overflow: hidden; border-color: #c0c0c0; }
+  .seg.part .fill { position: absolute; top: 0; bottom: 0; left: 0; background: #0000ff; }
   .segbar.big .seg { height: 18px; }
   .prog-label { display: flex; justify-content: space-between; gap: 10px; margin: 7px 0 3px; font-size: 12px; }
   .prog-label .dim { color: #333; }
@@ -159,8 +161,11 @@
     body { font-size: 14px; padding-bottom: 46px; overflow-x: hidden; }
     .content-wrap { padding: 8px; }
     .page-title { font-size: 20px; }
-    .topbar { font-size: 13px; padding: 6px 8px; }
-    .topbar .winbtn { font-size: 13px; padding: 8px 10px; }
+    .topbar { flex-wrap: nowrap; font-size: 11px; gap: 4px; padding: 4px 6px; }
+    #topTitle { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 0; }
+    .topbar > span { flex-shrink: 0; flex-wrap: nowrap !important; }
+    .topbar .winbtn { font-size: 10px; padding: 2px 5px; min-height: auto; }
+    .clock { font-size: 10px; flex-shrink: 0; }
     .winbtn { padding: 8px 12px; font-size: 14px; min-height: 42px; -webkit-tap-highlight-color: transparent; }
     .winbtn.big { font-size: 16px; padding: 10px 20px; }
     input[type="text"], select { font-size: 16px; padding: 8px; min-height: 42px; }
@@ -269,8 +274,7 @@
       <div>
         <div class="gbox gbox-inner">
           <div class="gtitle">Héros</div>
-          <div class="prog-label" style="margin-top:0;"><span>Vie</span><span id="hpText">0 / 0</span></div>
-          <div class="segbar" id="hpBar"></div>
+          <div class="prog-label" style="margin-top:0;margin-bottom:4px;"><span>Vie</span><span id="hpText">0 / 0</span></div>
           <div style="margin-top:8px;">
             <div class="stat-row"><span class="label">Niveau</span><span class="val" id="statLevel">1</span></div>
             <div class="stat-row"><span class="label">Force (FOR)</span><span class="val" id="statStr">0</span></div>
@@ -809,6 +813,8 @@ function newGame() {
     actionTimer: 0,
     actionText: "",
     spells: [],
+    killsByMonster: {},
+    gearPlus: {},
     equipped: { arme: null, tete: null, torse: null, jambes: null, pieds: null, mains: null, anneau: null, amule: null },
     inventory: [],
     log: [],
@@ -1025,13 +1031,19 @@ function tick() {
   applyPerSecondDamage();
   if (game.hp <= 0) { die(); return; }
 
+  let actionResolved = false;
   if (game.actionTimer >= game.actionDuration) {
     resolveAction();
+    actionResolved = true;
   }
 
   const q = game.quest;
   const done = q.type === "exterminate" ? (q.count >= q.need || q.time >= q.duration) : q.time >= q.duration;
   if (done) {
+    if (!actionResolved) {
+      game.actionTimer = game.actionDuration;
+      resolveAction();
+    }
     completeQuest();
   }
 }
@@ -1062,6 +1074,7 @@ function resolveAction() {
     game.xp += xpGain;
     game.gold += goldGain;
     game.kills += 1;
+    game.killsByMonster[mons.name] = (game.killsByMonster[mons.name] || 0) + 1;
     if (game.quest.type === "exterminate" && game.quest.target === mons.name) {
       game.quest.count += 1;
     }
@@ -1123,7 +1136,7 @@ function checkLevelUp() {
     game.maxHp += 15 + game.stats.con;
     game.hp = game.maxHp;
     log("level", "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau " + game.level + " (+1 à tous les attributs).");
-    log("system", "Nouveau titre : " + titleForLevel(game.level));
+    log("system", "Nouveau titre : " + killTitle());
     checkSpellLearning();
     checkLevelUp();
   }
@@ -1136,6 +1149,17 @@ function xpNeeded(lvl) {
 function titleForLevel(lvl) {
   const idx = Math.min(TITLES.length - 1, Math.floor((lvl - 1) / 2));
   return TITLES[idx] + " niveau " + lvl;
+}
+
+function killTitle() {
+  if (!game.killsByMonster) return titleForLevel(game.level);
+  let best = null, bestK = 0;
+  for (const n in game.killsByMonster) {
+    if (game.killsByMonster[n] > bestK) { bestK = game.killsByMonster[n]; best = n; }
+  }
+  if (!best) return titleForLevel(game.level);
+  const lvl = Math.min(99, Math.floor(bestK / 50) + 1);
+  return "Tueur de " + best + " (niv. " + lvl + ")";
 }
 
 /* ============================================================
@@ -1165,18 +1189,23 @@ function generateEquip(mLevel) {
   const t = pick(EQUIP_BASES);
   const mult = 0.8 + Math.random() * 0.9;
   const lvl = Math.max(1, Math.round(mLevel * (0.8 + Math.random() * 0.5)));
+  const plus = game.gearPlus[t.base] || 0;
   const item = {
     id: uid(),
     kind: "equip",
     slot: t.slot,
     base: t.base,
     level: lvl,
+    plus: plus,
     dmg: 0,
     armor: 0
   };
   item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * mult));
   item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * mult));
-  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base;
+  item.dmg += plus;
+  item.armor += plus;
+  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base + (plus > 0 ? " +" + plus : "");
+  game.gearPlus[t.base] = plus + 1;
   return item;
 }
 
@@ -1238,9 +1267,17 @@ function fmtTime(sec) {
 }
 
 function makeSegs(total, filled) {
+  const full = Math.floor(filled);
+  const frac = filled - full;
   let h = "";
   for (let i = 0; i < total; i++) {
-    h += '<div class="seg' + (i < filled ? " on" : "") + '"></div>';
+    if (i < full) {
+      h += '<div class="seg on"></div>';
+    } else if (i === full && frac > 0.02) {
+      h += '<div class="seg part"><div class="fill" style="width:' + (frac * 100) + '%"></div></div>';
+    } else {
+      h += '<div class="seg"></div>';
+    }
   }
   return h;
 }
@@ -1256,23 +1293,22 @@ function render() {
 
   document.getElementById("heroName").textContent = g.name;
   document.getElementById("heroMeta").textContent = "Niveau " + g.level + " " + g.race.name + " · " + g.class.name + " · stat primaire : " + STAT_LABELS[g.class.primary].toLowerCase();
-  document.getElementById("heroTitle").textContent = titleForLevel(g.level);
+  document.getElementById("heroTitle").textContent = killTitle();
 
   const needed = xpNeeded(g.level);
 
   document.getElementById("actionLabel").textContent = "Action : " + (g.actionText || "en exploration...");
   document.getElementById("actionTime").textContent = Math.min(g.actionTimer, g.actionDuration) + "s / " + g.actionDuration + "s";
-  renderSeg("actionBar", 10, Math.min(10, Math.floor(g.actionTimer / g.actionDuration * 10)));
+  renderSeg("actionBar", 10, Math.min(10, g.actionTimer / g.actionDuration * 10));
 
   document.getElementById("questShort").textContent = g.quest.text;
   document.getElementById("questTime").textContent = Math.min(g.quest.time, g.quest.duration) + "s / " + g.quest.duration + "s";
-  renderSeg("questBar", 10, Math.floor(g.quest.time / g.quest.duration * 10));
+  renderSeg("questBar", 10, g.quest.time / g.quest.duration * 10);
 
   document.getElementById("xpText").textContent = g.xp + " / " + needed + " XP";
-  renderSeg("xpBar", 10, Math.floor(g.xp / needed * 10));
+  renderSeg("xpBar", 10, g.xp / needed * 10);
 
   document.getElementById("hpText").textContent = Math.max(0, Math.round(g.hp)) + " / " + g.maxHp;
-  renderSeg("hpBar", 10, Math.floor(Math.max(0, g.hp) / g.maxHp * 10));
 
   document.getElementById("statLevel").textContent = g.level;
   document.getElementById("statStr").textContent = g.stats.str;
@@ -1496,6 +1532,8 @@ function load() {
         if (!Array.isArray(game.questLog)) {
           game.questLog = game.quest ? [{ text: game.quest.text, done: false }] : [];
         }
+        if (!game.killsByMonster) game.killsByMonster = {};
+        if (!game.gearPlus) game.gearPlus = {};
         rebuildLogFromSave();
         log("system", "Aventure chargée. Bon retour, " + game.name + " !");
         document.getElementById("topTitle").textContent = "Questing Simulator";
