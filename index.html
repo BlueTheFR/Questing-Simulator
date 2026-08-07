@@ -143,19 +143,6 @@
   .tot-hint { font-size: 11px; }
   .load-label { text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 5px; font-style: italic; }
 
-  /* ---------- Dialogue de mort ---------- */
-  #deathOverlay {
-    display: none; position: fixed; inset: 0; z-index: 50;
-    background: rgba(0,0,0,.35); align-items: center; justify-content: center;
-  }
-  .dialog {
-    background: #fff; border: 1px solid #000;
-    max-width: 420px; padding: 2px;
-  }
-  .dialog-title { font-weight: bold; padding: 3px 8px; font-size: 13px; border-bottom: 1px solid #000; }
-  .dialog-body { padding: 16px; text-align: center; }
-  .dialog-body h2 { color: #a00; margin-bottom: 8px; font-size: 16px; }
-
   /* ---------- Mobile ---------- */
   @media (max-width: 640px) {
     body { font-size: 14px; padding-bottom: 46px; overflow-x: hidden; }
@@ -183,7 +170,6 @@
     #log { font-size: 13px; }
     .quest-box, .quest-desc, .quest-reward, .item, .plot-entry { font-size: 12px; }
     .statusbar { height: 30px; font-size: 13px; }
-    .dialog { max-width: calc(100% - 20px); }
   }
 </style>
 </head>
@@ -328,18 +314,6 @@
   </div>
 </div>
 
-<!-- ================= DIALOGUE DE MORT ================= -->
-<div id="deathOverlay">
-  <div class="dialog">
-    <div class="dialog-title">Questing Simulator</div>
-    <div class="dialog-body">
-      <h2>Vous êtes mort...</h2>
-      <p>Mais les divinités de ce monde ont un plan.</p>
-      <p style="color:#404040;margin-top:6px;font-size:11px;">(Résurrection automatique dans quelques secondes.)</p>
-    </div>
-  </div>
-</div>
-
 <!-- ================= BARRE DE STATUT BAS ================= -->
 <footer class="statusbar">
   <span id="statusText">Prêt</span>
@@ -407,13 +381,18 @@ const CLASSES = [
 ];
 
 const SPELL_POOLS = {
-  fighter: ["Coup de lapin", "Cri de guerre", "Frappe du forgeron", "Balayage", "Coup de bouclier", "Charge du taureau", "Provocation", "Tourbillon de haches", "Poing bionique", "Coup fatal"],
-  holy: ["Lumière divine", "Bénédiction du pain", "Reproche béni", "Guérison du doute", "Aura de puanteur sainte", "Marteau sacré", "Châtiment", "Sermon punitif", "Colère du palefrenier", "Grâce tardive"],
-  mage: ["Boule de feu", "Éclair", "Main de gloire", "Bourrasque", "Transmutation de chèvre", "Pluie de grenouilles", "Contrôle des marées", "Météore du chaos", "Explosion mineure (et tardive)", "Rappel des chaussettes"],
-  nature: ["Appel de la forêt", "Morsure d'ortie", "Racines grognonnes", "Invocation de chèvre", "Chant des oiseaux", "Bourdonnement", "Fertilisation", "Vent de feuilles", "Danse du lichen", "Séisme (très local)"],
-  trickster: ["Double pas", "Disparition", "Flèche sournoise", "Bourse légère", "Coup de l'ombre", "Séduction", "Piche voleuse", "Tour de passe-passe", "Coup bas légal", "Confusion totale"]
+  fighter: ["Coup de lapin", "Cri de guerre", "Frappe du forgeron", "Balayage", "Coup de bouclier", "Charge du taureau", "Provocation", "Tourbillon de haches", "Poing bionique", "Coup fatal", "Coup de la dernière chance", "Baroud d'honneur", "Sourire menaçant", "Coup de boule amical", "Combo de la baston"],
+  holy: ["Lumière divine", "Bénédiction du pain", "Reproche béni", "Guérison du doute", "Aura de puanteur sainte", "Marteau sacré", "Châtiment", "Sermon punitif", "Colère du palefrenier", "Grâce tardive", "Bénédiction du gratin", "Sacre de la brioche", "Prière du lundi", "Aura de bienveillance fatale", "Anathème du dentiste"],
+  mage: ["Boule de feu", "Éclair", "Main de gloire", "Bourrasque", "Transmutation de chèvre", "Pluie de grenouilles", "Contrôle des marées", "Météore du chaos", "Explosion mineure (et tardive)", "Rappel des chaussettes", "Boule de feu (petite mais tenace)", "Éclair de grille-pain", "Invocation de la clé perdue", "Pluie de yaourts", "Détonation de chaussettes"],
+  nature: ["Appel de la forêt", "Morsure d'ortie", "Racines grognonnes", "Invocation de chèvre", "Chant des oiseaux", "Bourdonnement", "Fertilisation", "Vent de feuilles", "Danse du lichen", "Séisme (très local)", "Pousse-pousse du chêne", "Bourrasque de feuilles mortes", "Appel de la taupe", "Floraison surprise", "Tremblement de terre (léger)"],
+  trickster: ["Double pas", "Disparition", "Flèche sournoise", "Bourse légère", "Coup de l'ombre", "Séduction", "Piche voleuse", "Tour de passe-passe", "Coup bas légal", "Confusion totale", "Poche percée", "Esquive du tavernier", "Regard déstabilisant", "Pièce à double face", "Passe-muraille (optionnel)"]
 };
-const SPELL_LEVELS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 20];
+const SPELL_LEVELS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 20, 23, 26, 29, 33, 37];
+const SPELL_SCHOOL_LABELS = { fighter: "Guerre", holy: "Lumière", mage: "Arcane", nature: "Nature", trickster: "Tromperie" };
+function spellTier(i) {
+  if (i < SPELL_LEVELS.length) return SPELL_LEVELS[i];
+  return SPELL_LEVELS[SPELL_LEVELS.length - 1] + 5 * (i - SPELL_LEVELS.length + 1);
+}
 
 /* ============================================================
    NOMS, TITRES, ACTIONS, QUÊTES, MONSTRES
@@ -555,24 +534,56 @@ const EQUIP_BASES = [
   { slot: "arme",   base: "Couteau à beurre",    dmg: [1,3],  armor: [0,0] },
   { slot: "arme",   base: "Marteau à fromage",   dmg: [3,7],  armor: [0,0] },
   { slot: "arme",   base: "Pic à glace",         dmg: [2,4],  armor: [0,0] },
+  { slot: "arme",   base: "Fourchette à rôti",   dmg: [2,5],  armor: [0,0] },
+  { slot: "arme",   base: "Cuillère en bois géante", dmg: [2,6], armor: [0,0] },
+  { slot: "arme",   base: "Corde à sauter ennemie", dmg: [1,4], armor: [0,0] },
+  { slot: "arme",   base: "Poêlon du barde",     dmg: [3,6],  armor: [0,0] },
+  { slot: "arme",   base: "Crosse de croquet maudite", dmg: [2,5], armor: [0,0] },
+  { slot: "arme",   base: "Parapluie à épée",    dmg: [2,4],  armor: [0,0] },
+  { slot: "arme",   base: "Baguette de sourcier", dmg: [1,3], armor: [0,0] },
+  { slot: "arme",   base: "Hallebarde de ménage", dmg: [3,7], armor: [0,0] },
   { slot: "tete",   base: "Casque",              dmg: [0,0],  armor: [2,5] },
   { slot: "tete",   base: "Bonnet de nuit",      dmg: [0,0],  armor: [1,3] },
   { slot: "tete",   base: "Casque à pointe",     dmg: [0,0],  armor: [2,4] },
+  { slot: "tete",   base: "Casque de vélo héroïque", dmg: [0,0], armor: [2,5] },
+  { slot: "tete",   base: "Chapeau de paille de garde", dmg: [0,0], armor: [1,4] },
+  { slot: "tete",   base: "Tiare de la laitière", dmg: [0,0], armor: [1,3] },
+  { slot: "tete",   base: "Casque à cornichons", dmg: [0,0],  armor: [2,4] },
   { slot: "torse",  base: "Flanelle",            dmg: [0,0],  armor: [3,7] },
   { slot: "torse",  base: "Tunique",             dmg: [0,0],  armor: [2,6] },
   { slot: "torse",  base: "Bandeau de maman",    dmg: [0,0],  armor: [1,2] },
+  { slot: "torse",  base: "Chemise de force (confortable)", dmg: [0,0], armor: [2,5] },
+  { slot: "torse",  base: "Tablier du forgeron", dmg: [0,0],  armor: [2,6] },
+  { slot: "torse",  base: "Gilet de laine à rayures", dmg: [0,0], armor: [1,4] },
+  { slot: "torse",  base: "Armure en carton",    dmg: [0,0],  armor: [1,3] },
   { slot: "jambes", base: "Collant",             dmg: [0,0],  armor: [2,5] },
   { slot: "jambes", base: "Pantalon",            dmg: [0,0],  armor: [2,4] },
   { slot: "jambes", base: "Chausses dépareillées", dmg: [0,0], armor: [1,3] },
+  { slot: "jambes", base: "Jupe écossaise du guerrier", dmg: [0,0], armor: [2,5] },
+  { slot: "jambes", base: "Pantalon cargo de l'aventurier", dmg: [0,0], armor: [2,4] },
+  { slot: "jambes", base: "Caleçon de l'invincible", dmg: [0,0], armor: [1,3] },
   { slot: "pieds",  base: "Chausson",            dmg: [0,0],  armor: [1,4] },
   { slot: "pieds",  base: "Sandale",             dmg: [0,0],  armor: [1,2] },
   { slot: "pieds",  base: "Bottine gauche",      dmg: [0,0],  armor: [2,4] },
+  { slot: "pieds",  base: "Sabot de ferme",      dmg: [0,0],  armor: [1,3] },
+  { slot: "pieds",  base: "Chaussure de bowling", dmg: [0,0], armor: [1,3] },
+  { slot: "pieds",  base: "Pantoufle chauffante", dmg: [0,0], armor: [1,2] },
+  { slot: "pieds",  base: "Bottine droite (enfin !)", dmg: [0,0], armor: [2,4] },
   { slot: "mains",  base: "Mitaine",             dmg: [0,0],  armor: [1,3] },
   { slot: "mains",  base: "Gant de vaisselle",   dmg: [0,0],  armor: [1,2] },
+  { slot: "mains",  base: "Moufle du bourreau",  dmg: [0,0],  armor: [1,4] },
+  { slot: "mains",  base: "Gant de jardinage en plastique", dmg: [0,0], armor: [1,3] },
+  { slot: "mains",  base: "Mittaine de lancer de hache", dmg: [0,0], armor: [1,3] },
   { slot: "anneau", base: "Anneau",              dmg: [0,2],  armor: [0,1] },
   { slot: "anneau", base: "Élastique",           dmg: [0,1],  armor: [0,0] },
+  { slot: "anneau", base: "Anneau d'élastique royal", dmg: [0,1], armor: [0,1] },
+  { slot: "anneau", base: "Anneau de serviette", dmg: [0,1],  armor: [0,0] },
+  { slot: "anneau", base: "Bague à la saucisse", dmg: [0,2],  armor: [0,0] },
   { slot: "amule",  base: "Amulette",            dmg: [0,2],  armor: [0,1] },
-  { slot: "amule",  base: "Bretelle",            dmg: [0,1],  armor: [0,1] }
+  { slot: "amule",  base: "Bretelle",            dmg: [0,1],  armor: [0,1] },
+  { slot: "amule",  base: "Médaille du troisième", dmg: [0,1], armor: [0,1] },
+  { slot: "amule",  base: "Collier de pâtes",    dmg: [0,1],  armor: [0,1] },
+  { slot: "amule",  base: "Pendule du jardinier", dmg: [0,2], armor: [0,1] }
 ];
 
 const ADJ1 = ["Émoussé", "Corrodé", "Terne", "Poussiéreux", "Moite", "Luisant", "Éclatant", "Délavé", "Dentelé", "Sacré", "Maudit", "Chaud", "Aiguisé", "Rouillé", "Propre (rare)"];
@@ -815,11 +826,10 @@ function newGame() {
     spells: [],
     killsByMonster: {},
     gearPlus: {},
+    gearLvl: 0,
     equipped: { arme: null, tete: null, torse: null, jambes: null, pieds: null, mains: null, anneau: null, amule: null },
     inventory: [],
-    log: [],
-    dead: false,
-    deathTimer: 0
+    log: []
   };
 
   const br = creation.race.bonus;
@@ -933,7 +943,19 @@ function rewardSpell() {
   const pool = SPELL_POOLS[game.class.archetype] || [];
   const known = game.spells.map(function (s) { return s.name; });
   const available = pool.filter(function (n) { return known.indexOf(n) === -1; });
-  if (available.length > 0) {
+  const foreign = [];
+  for (const k in SPELL_POOLS) {
+    if (k === game.class.archetype) continue;
+    SPELL_POOLS[k].forEach(function (n) {
+      if (known.indexOf(n) === -1) foreign.push(n);
+    });
+  }
+  if (foreign.length > 0 && (available.length === 0 || Math.random() < 0.4)) {
+    const name = pick(foreign);
+    const school = SPELL_SCHOOL_LABELS[spellIndex(name).pool] || "étrangère";
+    game.spells.push({ name: name, lvl: 1 });
+    log("level", "Récompense : vous apprenez un sort d'une autre école (" + school + ") : « " + name + " » !");
+  } else if (available.length > 0) {
     const name = pick(available);
     game.spells.push({ name: name, lvl: 1 });
     log("level", "Récompense : vous apprenez un nouveau sort « " + name + " » !");
@@ -948,6 +970,14 @@ function rewardSpell() {
   }
 }
 
+function spellIndex(name) {
+  for (const k in SPELL_POOLS) {
+    const i = SPELL_POOLS[k].indexOf(name);
+    if (i >= 0) return { pool: k, idx: i };
+  }
+  return null;
+}
+
 /* ============================================================
    PROGRESSION BASÉE SUR LES STATS + SORTS
    ============================================================ */
@@ -960,11 +990,10 @@ function xpMultiplier() {
 }
 
 function spellPower() {
-  const pool = SPELL_POOLS[game.class.archetype] || [];
   let p = 0;
   game.spells.forEach(function (s) {
-    const i = pool.indexOf(s.name);
-    if (i >= 0) p += (2 + i * 2) * (1 + (s.lvl - 1) * 0.5);
+    const info = spellIndex(s.name);
+    if (info) p += (2 + info.idx * 2) * (1 + (s.lvl - 1) * 0.5);
   });
   return p;
 }
@@ -991,12 +1020,19 @@ function armorRating() {
 
 function checkSpellLearning() {
   const pool = SPELL_POOLS[game.class.archetype] || [];
+  let learned = false;
   for (let i = 0; i < pool.length; i++) {
     const known = game.spells.some(function (s) { return s.name === pool[i]; });
-    if (game.level >= SPELL_LEVELS[i] && !known) {
+    if (game.level >= spellTier(i) && !known) {
       game.spells.push({ name: pool[i], lvl: 1 });
       log("level", "Vous apprenez un nouveau sort : « " + pool[i] + " » !");
+      learned = true;
     }
+  }
+  if (!learned && game.level >= spellTier(pool.length) && game.spells.length) {
+    const s = pick(game.spells);
+    s.lvl += 1;
+    log("level", "Votre maîtrise s'affine : « " + s.name + " » passe au niveau " + s.lvl + " !");
   }
 }
 
@@ -1007,12 +1043,6 @@ function checkSpellLearning() {
 function tick() {
   if (!game) return;
   game.totalTime += 1;
-
-  if (game.dead) {
-    game.deathTimer -= 1;
-    if (game.deathTimer <= 0) revive();
-    return;
-  }
 
   game.actionTimer += 1;
 
@@ -1025,7 +1055,7 @@ function tick() {
   }
 
   applyPerSecondDamage();
-  if (game.hp <= 0) { die(); return; }
+  if (game.hp < 1) game.hp = 1;
 
   let actionResolved = false;
   if (game.actionTimer >= game.actionDuration) {
@@ -1087,25 +1117,40 @@ function resolveAction() {
     log("combat", "Le " + mons.name + " " + pick(RETREAT_MSGS));
   }
 
-  if (!game.dead) startNextAction();
+  startNextAction();
 }
 
 function doShopping() {
   const sold = game.inventory.length;
   sellAllInventory();
-  const discount = 1 - Math.min(0.5, game.stats.cha * 0.01);
+  game.gearLvl += 1;
+  const discount = Math.max(0.5, 1 - game.stats.cha * 0.02);
   let bought = 0;
-  let attempts = 0;
-  while (attempts < 200) {
-    attempts += 1;
-    const gearLvl = game.level + Math.floor(game.stats.cha / 4);
-    const item = generateEquip(gearLvl);
-    const cost = Math.max(10, Math.round((item.dmg * 5 + item.armor * 3 + item.level * 4) * discount));
-    if (cost > game.gold) break;
-    game.gold -= cost;
-    game.itemsFound += 1;
-    if (autoEquip(item)) bought += 1;
-    else game.inventory.push(item);
+  for (const slot in SLOT_LABELS) {
+    const pool = EQUIP_BASES.filter(function (t) { return t.slot === slot; });
+    const t = pick(pool);
+    const lvl = Math.max(1, Math.round(game.level * (0.8 + Math.random() * 0.4) + game.gearLvl * 0.5));
+    const item = {
+      id: uid(),
+      kind: "equip",
+      slot: t.slot,
+      base: t.base,
+      level: lvl,
+      plus: 0,
+      dmg: 0,
+      armor: 0
+    };
+    item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
+    item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * (0.8 + Math.random() * 0.9)));
+    item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base;
+    const price = Math.max(1, Math.floor((item.dmg + item.armor) * 3 + item.level * 2) * discount);
+    if (game.gold >= price) {
+      game.gold -= price;
+      const old = game.equipped[slot];
+      if (old) game.inventory.push(old);
+      game.equipped[slot] = item;
+      bought += 1;
+    }
   }
   log("loot", "Boutique : " + sold + " objet(s) vendu(s), " + bought + " pièce(s) achetée(s) (charisme = meilleures pièces).");
 }
@@ -1138,23 +1183,6 @@ function article(name) {
   return fem[name] || /^[AEIOUYÀÉÊÎÔ]/.test(name) ? "une" : "un";
 }
 
-function die() {
-  game.dead = true;
-  game.deathTimer = 8;
-  const lostGold = Math.floor(game.gold * 0.1);
-  game.gold -= lostGold;
-  showDeath();
-  log("system", "Vous êtes mort ! Vous perdez " + lostGold + " pièces d'or. Résurrection en cours...");
-}
-
-function revive() {
-  game.dead = false;
-  game.hp = game.maxHp;
-  hideDeath();
-  log("system", "Un clerc de passage vous ressuscite. Vous reprenez la route !");
-  startNextAction();
-}
-
 function checkLevelUp() {
   const needed = xpNeeded(game.level);
   if (game.xp >= needed) {
@@ -1175,8 +1203,9 @@ function xpNeeded(lvl) {
 }
 
 function titleForLevel(lvl) {
-  const idx = Math.min(TITLES.length - 1, Math.floor((lvl - 1) / 2));
-  return TITLES[idx] + " niveau " + lvl;
+  const idx = Math.floor((lvl - 1) / 2);
+  if (idx < TITLES.length) return TITLES[idx] + " niveau " + lvl;
+  return "légende immortelle de niveau " + lvl;
 }
 
 function killTitle() {
@@ -1186,7 +1215,7 @@ function killTitle() {
     if (game.killsByMonster[n] > bestK) { bestK = game.killsByMonster[n]; best = n; }
   }
   if (!best) return titleForLevel(game.level);
-  const lvl = Math.min(99, Math.floor(bestK / 50) + 1);
+  const lvl = Math.floor(bestK / 50) + 1;
   return "Tueur de " + best + " (niv. " + lvl + ")";
 }
 
@@ -1284,6 +1313,7 @@ function appendLogLine(type, text) {
   p.className = "log-" + type;
   p.textContent = "[" + fmtTime(game.totalTime) + "] " + text;
   el.appendChild(p);
+  while (el.children.length > 200) el.removeChild(el.firstChild);
   el.scrollTop = el.scrollHeight;
 }
 
@@ -1355,8 +1385,7 @@ function render() {
   document.getElementById("statTime").textContent = fmtTime(g.totalTime);
 
   let st;
-  if (g.dead) st = "Vous êtes mort... résurrection dans " + Math.max(0, g.deathTimer) + "s";
-  else if (g.shopping) st = "Se rend à la boutique...";
+  if (g.shopping) st = "Se rend à la boutique...";
   else st = "Action : " + (g.actionText || "en exploration...");
   document.getElementById("statusText").textContent = st;
 
@@ -1406,7 +1435,8 @@ function renderSpells() {
   game.spells.forEach(function (s) {
     const div = document.createElement("div");
     div.className = "spell";
-    div.textContent = s.name + " (niv. " + s.lvl + ")";
+    const own = (SPELL_POOLS[game.class.archetype] || []).indexOf(s.name) >= 0;
+    div.textContent = s.name + " (niv. " + s.lvl + ")" + (own ? "" : " · étranger");
     box.appendChild(div);
   });
 }
@@ -1489,10 +1519,16 @@ function renderPlot() {
   const box = document.getElementById("plotDev");
   box.innerHTML = "";
   const hours = game.totalTime / 3600;
-  let done = 0;
-  while (actHours(done + 1) <= hours) done += 1;
+  let done;
+  if (hours < 100) {
+    done = 0;
+    while (actHours(done + 1) <= hours) done += 1;
+  } else {
+    done = Math.floor(hours / 100) + 8;
+  }
   const total = done + 1;
-  for (let i = 1; i <= total; i++) {
+  const start = Math.max(1, total - 59);
+  for (let i = start; i <= total; i++) {
     const div = document.createElement("div");
     div.className = "plot-entry";
     const cb = document.createElement("input");
@@ -1527,6 +1563,7 @@ function migrateSave(g) {
   }
   if (!g.killsByMonster) g.killsByMonster = {};
   if (!g.gearPlus) g.gearPlus = {};
+  if (g.gearLvl == null) g.gearLvl = 0;
   if (g.shopping == null) g.shopping = false;
   if (g.mp == null) g.mp = 20 + (g.stats ? g.stats.wis * 4 : 20);
   if (g.quest && !g.quest.need) {
@@ -1608,9 +1645,6 @@ function rebuildLogFromSave() {
   el.scrollTop = el.scrollHeight;
 }
 
-function showDeath() { document.getElementById("deathOverlay").style.display = "flex"; }
-function hideDeath() { document.getElementById("deathOverlay").style.display = "none"; }
-
 /* ============================================================
    UTILITAIRES & DÉMARRAGE
    ============================================================ */
@@ -1629,6 +1663,7 @@ function weightedPick(arr) {
 }
 
 function resetToCreation() {
+  game = null;
   rollAllStats();
   creation.name = randomName();
   creation.race = pick(RACES);
