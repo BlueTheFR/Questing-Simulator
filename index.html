@@ -100,6 +100,7 @@
   .log-combat { color: #7a1f1f; }
   .log-level { font-weight: bold; }
   .log-quest { font-weight: bold; }
+  .log-event { color: #004080; font-style: italic; }
 
   .item { padding: 4px 6px; border: 1px solid #000; background: #fff; margin-bottom: 4px; font-size: 11px; line-height: 1.3; }
   .item .iname { font-weight: bold; }
@@ -254,6 +255,8 @@
 
       <div class="prog-label"><span>Expérience</span><span class="dim" id="xpText">0 / 0</span></div>
       <div class="segbar big" id="xpBar"></div>
+
+      <div class="prog-label"><span>Météo : <span id="weatherText">...</span></span><span class="dim" id="zoneText">...</span></div>
     </div>
 
     <div class="grid">
@@ -276,6 +279,7 @@
             <div class="stat-row"><span class="label">Quêtes finies</span><span class="val" id="statQuests">0</span></div>
             <div class="stat-row"><span class="label">Or</span><span class="val gold" id="statGold">0</span></div>
             <div class="stat-row"><span class="label">Objets obtenus</span><span class="val" id="statItems">0</span></div>
+            <div class="stat-row"><span class="label">Trésors</span><span class="val gold" id="statTreasures">0</span></div>
           </div>
           <div class="stats-line">Temps de partie : <span id="statTime">0s</span></div>
         </div>
@@ -521,6 +525,40 @@ const MONSTER_PLURALS = {
 };
 
 function monsterPlural(name) { return MONSTER_PLURALS[name] || name + "s"; }
+
+/* Zones débloquées par acte : chaque zone a ses propres monstres */
+const MONSTERS_BY_NAME = {};
+MONSTERS.forEach(function (m) { MONSTERS_BY_NAME[m.name] = m; });
+
+const ZONES = [
+  { act: 1, name: "Les Champs du Début",       monsters: ["Rat géant", "Chauve-souris", "Gobelin", "Chèvre enragée", "Slime gluant", "Lémure"] },
+  { act: 2, name: "La Forêt Sombre",           monsters: ["Squelette", "Araignée des cavernes", "Zombie", "Elan domestiqué", "Ninja"] },
+  { act: 3, name: "Les Cavernes Grondantes",   monsters: ["Orc", "Loup", "Serpent venimeux", "Bandit"] },
+  { act: 4, name: "Le Marais Putride",         monsters: ["Goule", "Ogre", "Gargouille"] },
+  { act: 5, name: "La Montagne des Crânes",    monsters: ["Troll", "Golem de pierre", "Mage noir", "Vrock"] },
+  { act: 6, name: "Les Terres Arides",         monsters: ["Dragonnet", "Géant"] },
+  { act: 7, name: "Le Col des Lamentations",   monsters: ["Licorne sombre", "Chimère"] },
+  { act: 8, name: "Les Ruines du Serment",     monsters: ["Béhémoth"] },
+  { act: 9, name: "Le Repaire des Anciens",    monsters: ["Dragon ancien"] }
+];
+
+const WEATHERS = [
+  { id: "sun",    label: "Beau temps", power: 1.05, dur: 0.9 },
+  { id: "clouds", label: "Nuageux",    power: 1.0,  dur: 1.0 },
+  { id: "wind",   label: "Vent fort",  power: 1.03, dur: 0.95 },
+  { id: "rain",   label: "Pluie",      power: 0.95, dur: 1.08 },
+  { id: "fog",    label: "Brouillard", power: 0.92, dur: 1.15 },
+  { id: "storm",  label: "Orage",      power: 0.9,  dur: 1.25 }
+];
+
+const EVENTS = [
+  { kind: "gold", text: "Le héros trouve une bourse abandonnée.",              gold: [10, 30] },
+  { kind: "gold", text: "Un colporteur de passage échange quelques babioles.", gold: [15, 40] },
+  { kind: "gold", text: "Le héros récupère une prime oubliée.",                gold: [20, 50] },
+  { kind: "item", text: "Un colporteur propose une affaire irrésistible." },
+  { kind: "treasure", text: "Le héros ouvre un coffre oublié : un trésor !" },
+  { kind: "mimic", text: "Un coffre se révèle être une mimique !" }
+];
 
 /* ============================================================
    ÉQUIPEMENT & OBJETS ABSURDES
@@ -816,6 +854,10 @@ function newGame() {
     kills: 0,
     questsDone: 0,
     itemsFound: 0,
+    treasures: 0,
+    weatherId: "sun",
+    weatherTimer: 300,
+    pendingEvent: null,
     totalTime: 0,
     quest: null,
     questLog: [],
@@ -856,6 +898,7 @@ function clampStat(v) { return Math.max(3, v); }
 
 const QUEST_TYPES = ["deliver", "exterminate", "fetch", "seek"];
 const QUEST_TYPE_LABELS = { deliver: "Livraison", exterminate: "Extermination", fetch: "Récupération", seek: "Recherche" };
+const QUEST_TYPE_XP = { deliver: 1, exterminate: 1.5, fetch: 1.25, seek: 0.75 };
 
 function startQuest() {
   const type = pick(QUEST_TYPES);
@@ -864,7 +907,7 @@ function startQuest() {
     text: "",
     target: "",
     count: 0,
-    need: randBetween(10, 25)
+    need: randBetween(10, 50)
   };
 
   if (type === "exterminate") {
@@ -888,12 +931,17 @@ function startQuest() {
   if (game.questLog.length > 200) game.questLog.splice(0, game.questLog.length - 200);
 }
 
+function questXp(q) {
+  return Math.max(1, Math.round((60 + game.level * 28) * xpMultiplier() * XP_SCALE * (q.need / 5) * (QUEST_TYPE_XP[q.type] || 1)));
+}
+
 function completeQuest() {
   game.questsDone += 1;
-  const bonusXp = Math.max(1, Math.round((60 + game.level * 28) * xpMultiplier() * XP_SCALE));
+  const bonusXp = questXp(game.quest);
   const bonusGold = 30 + game.level * 12;
   game.xp += bonusXp;
   game.gold += bonusGold;
+  game.treasures += 1;
   log("quest", "Quête terminée : « " + game.quest.text + " » (+" + bonusXp + " XP, +" + bonusGold + " or).");
   questReward();
   if (game.questLog.length) game.questLog[game.questLog.length - 1].done = true;
@@ -1044,6 +1092,17 @@ function tick() {
   if (!game) return;
   game.totalTime += 1;
 
+  game.weatherTimer -= 1;
+  if (game.weatherTimer <= 0) {
+    const old = game.weatherId;
+    game.weatherId = pick(WEATHERS).id;
+    if (game.weatherId !== old) {
+      const w = WEATHERS.filter(function (x) { return x.id === game.weatherId; })[0];
+      log("system", "La météo change : " + w.label + ".");
+    }
+    game.weatherTimer = randBetween(300, 600);
+  }
+
   game.actionTimer += 1;
 
   const maxMp = 20 + game.stats.wis * 4;
@@ -1095,11 +1154,18 @@ function resolveAction() {
     return;
   }
 
+  if (game.pendingEvent) {
+    applyEvent(game.pendingEvent);
+    game.pendingEvent = null;
+    startNextAction();
+    return;
+  }
+
   const mons = game.actionMonster;
   if (!mons) { startNextAction(); return; }
 
   const mHp = 12 + mons.lvl * 7;
-  const chance = heroPower() / (heroPower() + mHp * 0.8);
+  const chance = (heroPower() * weatherPower()) / (heroPower() + mHp * 0.8);
   const heroWins = Math.random() < Math.max(0.08, Math.min(0.97, chance));
 
   if (heroWins) {
@@ -1107,6 +1173,7 @@ function resolveAction() {
     const goldGain = randBetween(mons.gold[0], mons.gold[1]);
     game.xp += xpGain;
     game.gold += goldGain;
+    game.treasures += 1;
     game.kills += 1;
     game.killsByMonster[mons.name] = (game.killsByMonster[mons.name] || 0) + 1;
     if (game.quest) game.quest.count += 1;
@@ -1116,6 +1183,8 @@ function resolveAction() {
   } else {
     log("combat", "Le " + mons.name + " " + pick(RETREAT_MSGS));
   }
+
+  if (!game.pendingEvent && Math.random() < 0.12) game.pendingEvent = pick(EVENTS);
 
   startNextAction();
 }
@@ -1127,22 +1196,7 @@ function doShopping() {
   const discount = Math.max(0.5, 1 - game.stats.cha * 0.02);
   let bought = 0;
   for (const slot in SLOT_LABELS) {
-    const pool = EQUIP_BASES.filter(function (t) { return t.slot === slot; });
-    const t = pick(pool);
-    const lvl = Math.max(1, Math.round(game.level * (0.8 + Math.random() * 0.4) + game.gearLvl * 0.5));
-    const item = {
-      id: uid(),
-      kind: "equip",
-      slot: t.slot,
-      base: t.base,
-      level: lvl,
-      plus: 0,
-      dmg: 0,
-      armor: 0
-    };
-    item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
-    item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * (0.8 + Math.random() * 0.9)));
-    item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base;
+    const item = makeShopItemForSlot(slot);
     const price = Math.max(1, Math.floor((item.dmg + item.armor) * 3 + item.level * 2) * discount);
     if (game.gold >= price) {
       game.gold -= price;
@@ -1155,22 +1209,123 @@ function doShopping() {
   log("loot", "Boutique : " + sold + " objet(s) vendu(s), " + bought + " pièce(s) achetée(s) (charisme = meilleures pièces).");
 }
 
+function makeShopItemForSlot(slot) {
+  const pool = EQUIP_BASES.filter(function (t) { return t.slot === slot; });
+  const t = pick(pool);
+  const lvl = Math.max(1, Math.round(game.level * (0.8 + Math.random() * 0.4) + game.gearLvl * 0.5));
+  const item = {
+    id: uid(),
+    kind: "equip",
+    slot: t.slot,
+    base: t.base,
+    level: lvl,
+    plus: 0,
+    dmg: 0,
+    armor: 0
+  };
+  item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
+  item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * (0.8 + Math.random() * 0.9)));
+  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base;
+  return item;
+}
+
+function currentAct() {
+  const hours = game.totalTime / 3600;
+  let done;
+  if (hours < 100) {
+    done = 0;
+    while (actHours(done + 1) <= hours) done += 1;
+  } else {
+    done = Math.floor(hours / 100) + 8;
+  }
+  return done + 1;
+}
+
+function weatherPower() {
+  for (const w of WEATHERS) {
+    if (w.id === game.weatherId) return w.power;
+  }
+  return 1;
+}
+
+function weatherDur() {
+  for (const w of WEATHERS) {
+    if (w.id === game.weatherId) return w.dur;
+  }
+  return 1;
+}
+
+function applyEvent(e) {
+  if (e.kind === "gold") {
+    const g = randBetween(e.gold[0], e.gold[1]);
+    game.gold += g;
+    game.treasures += 1;
+    log("event", e.text + " (+" + g + " or).");
+  } else if (e.kind === "item") {
+    const item = makeShopItemForSlot(pick(Object.keys(SLOT_LABELS)));
+    game.itemsFound += 1;
+    if (autoEquip(item)) {
+      log("event", e.text + " Il achète " + item.name + " — équipé immédiatement !");
+    } else {
+      game.inventory.push(item);
+      log("event", e.text + " Il achète " + item.name + " (rangé dans l'inventaire).");
+    }
+  } else if (e.kind === "treasure") {
+    const roll = Math.random();
+    let item;
+    if (roll < 0.6) {
+      item = makeShopItemForSlot(pick(Object.keys(SLOT_LABELS)));
+    } else if (roll < 0.85) {
+      item = { id: uid(), kind: "unique", name: pick(UNIQUE_ITEMS), slot: "divers", dmg: 0, armor: 0 };
+    } else {
+      item = { id: uid(), kind: "junk", name: pick(JUNK), slot: "divers", dmg: 0, armor: 0 };
+    }
+    game.itemsFound += 1;
+    if (item.kind === "equip" && autoEquip(item)) {
+      log("event", e.text + " Il trouve " + item.name + " — équipé immédiatement !");
+    } else {
+      game.inventory.push(item);
+      log("event", e.text + " Il trouve " + item.name + " (rangé dans l'inventaire).");
+    }
+  } else if (e.kind === "mimic") {
+    const x = Math.max(1, Math.round((40 + game.level * 20) * xpMultiplier() * XP_SCALE));
+    const g = randBetween(10, 40);
+    game.xp += x;
+    game.gold += g;
+    game.treasures += 1;
+    log("event", e.text + " Le héros triomphe du combat (+" + x + " XP, +" + g + " or).");
+    checkLevelUp();
+  }
+}
+
 function monsterPool() {
-  const pool = MONSTERS.filter(function (m) { return m.lvl <= game.level + 2 && m.lvl >= Math.max(1, game.level - 3); });
-  return pool.length ? pool : MONSTERS;
+  const idx = Math.min(ZONES.length - 1, currentAct() - 1);
+  const zone = ZONES[idx];
+  const cur = [];
+  const past = [];
+  for (let i = 0; i <= idx; i++) {
+    ZONES[i].monsters.forEach(function (n) {
+      const m = MONSTERS_BY_NAME[n];
+      if (m) (i === idx ? cur : past).push(m);
+    });
+  }
+  const pool = cur.concat(past);
+  if (!pool.length) return MONSTERS;
+  if (Math.random() < 0.7 && cur.length) return cur;
+  return pool;
 }
 
 function startNextAction() {
   if (game.shopping) {
     game.actionMonster = null;
-    game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
+    game.actionDuration = Math.max(1, Math.round(randBetween(MIN_ACTION, MAX_ACTION) * weatherDur()));
     game.actionTimer = 0;
     game.actionText = "Se rend à la boutique...";
     return;
   }
   const mons = pick(monsterPool());
   game.actionMonster = mons;
-  game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
+  game.actionDuration = Math.max(1, Math.round(randBetween(MIN_ACTION, MAX_ACTION) * weatherDur()));
   game.actionTimer = 0;
   game.actionText = pick(ACTION_VERBS) + " " + pick(ACTION_TARGETS) + "...";
 }
@@ -1382,7 +1537,13 @@ function render() {
   document.getElementById("statQuests").textContent = g.questsDone;
   document.getElementById("statGold").textContent = formatGold(g.gold);
   document.getElementById("statItems").textContent = g.itemsFound;
+  document.getElementById("statTreasures").textContent = g.treasures;
   document.getElementById("statTime").textContent = fmtTime(g.totalTime);
+
+  const w = WEATHERS.filter(function (x) { return x.id === g.weatherId; })[0] || WEATHERS[0];
+  const wpct = Math.round((w.power - 1) * 100);
+  document.getElementById("weatherText").textContent = w.label + (wpct ? " (" + (wpct > 0 ? "+" : "") + wpct + " %)" : "");
+  document.getElementById("zoneText").textContent = zoneName();
 
   let st;
   if (g.shopping) st = "Se rend à la boutique...";
@@ -1416,8 +1577,8 @@ function renderQuest() {
   q.className = "quest-box";
   q.innerHTML =
     '<div class="quest-name">[' + QUEST_TYPE_LABELS[g.quest.type] + '] « ' + esc(g.quest.text) + ' »</div>' +
-    '<div class="quest-desc">Zone : ' + esc(zoneName(g.level)) + "</div>" +
-    '<div class="quest-reward">Récompense : ~' + Math.max(1, Math.round((60 + g.level * 28) * xpMultiplier() * XP_SCALE)) + " XP, ~" + (30 + g.level * 12) + " or + bonus aléatoire</div>" +
+    '<div class="quest-desc">Zone : ' + esc(zoneName()) + "</div>" +
+    '<div class="quest-reward">Récompense : ~' + questXp(g.quest) + " XP, ~" + (30 + g.level * 12) + " or + bonus aléatoire</div>" +
     '<div class="segbar" style="margin-top:6px;">' + makeSegs(10, Math.min(10, g.quest.count / g.quest.need * 10)) + '</div>';
   box.appendChild(q);
 }
@@ -1441,14 +1602,9 @@ function renderSpells() {
   });
 }
 
-function zoneName(lvl) {
-  if (lvl <= 2) return "Les Champs du Début";
-  if (lvl <= 4) return "La Forêt Sombre";
-  if (lvl <= 6) return "Les Cavernes Grondantes";
-  if (lvl <= 8) return "Le Marais Putride";
-  if (lvl <= 11) return "La Montagne des Crânes";
-  if (lvl <= 14) return "Les Terres Arides";
-  return "Le Repaire des Anciens";
+function zoneName() {
+  const idx = Math.min(ZONES.length - 1, currentAct() - 1);
+  return ZONES[idx].name;
 }
 
 function renderInventory() {
@@ -1564,7 +1720,11 @@ function migrateSave(g) {
   if (!g.killsByMonster) g.killsByMonster = {};
   if (!g.gearPlus) g.gearPlus = {};
   if (g.gearLvl == null) g.gearLvl = 0;
+  if (g.treasures == null) g.treasures = 0;
+  if (!g.weatherId) g.weatherId = "sun";
+  if (g.weatherTimer == null) g.weatherTimer = 300;
   if (g.shopping == null) g.shopping = false;
+  if (g.pendingEvent == null) g.pendingEvent = null;
   if (g.mp == null) g.mp = 20 + (g.stats ? g.stats.wis * 4 : 20);
   if (g.quest && !g.quest.need) {
     g.quest.need = randBetween(10, 25);
