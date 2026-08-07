@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questing Simulator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #cfe0f5;
+    color: #000;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 12px;
+    min-height: 100vh;
+    padding-bottom: 30px;
+  }
+
+  /* ---------- Barre du haut ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: #0000ff;
+    border-bottom: 1px solid #000;
+    padding: 5px 12px;
+    font-weight: bold; font-size: 15px;
+    color: #fff;
+  }
+  .clock { font-size: 12px; color: #fff; }
+  .topbar .winbtn {
+    background: #fff; color: #000; border: 1px solid #000;
+    padding: 2px 8px; font-size: 11px; font-family: inherit; cursor: pointer;
+  }
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 12px; }
+
+  /* ---------- Barre de statut bas ---------- */
+  .statusbar {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 24px; z-index: 40;
+    display: flex; justify-content: space-between; align-items: center; padding: 0 10px; gap: 20px;
+    background: #fff; border-top: 1px solid #000;
+    font-size: 12px;
+  }
+  #statusText { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---------- Boîtes ---------- */
+  .gbox { border: 1px solid #000; background: #fff; padding: 10px; margin-bottom: 10px; }
+  .gtitle { font-weight: bold; font-size: 13px; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 7px; }
+  .page-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 12px; color: #0000ff; }
+
+  /* ---------- Boutons / champs ---------- */
+  .winbtn {
+    background: #fff; color: #000; border: 1px solid #000;
+    padding: 3px 10px; font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  .winbtn.big { font-size: 14px; padding: 6px 18px; }
+  .winbtn:disabled { color: #808080; cursor: default; }
+  input[type="text"], select {
+    background: #fff; color: #000; border: 1px solid #000;
+    padding: 3px 5px; font-size: 12px; font-family: inherit; outline: none;
+  }
+  label { display: block; margin-bottom: 3px; font-weight: bold; }
+  .name-row { display: flex; gap: 6px; }
+  .name-row input { flex: 1; }
+
+  /* ---------- Barres segmentées "bar par bar" ---------- */
+  .segbar {
+    display: flex; gap: 2px; background: #fff;
+    padding: 2px; border: 1px solid #000;
+  }
+  .seg { flex: 1 1 0; height: 14px; background: #fff; border: 1px solid #c0c0c0; }
+  .seg.on { background: #0000ff; border-color: #0000ff; }
+  .segbar.big .seg { height: 18px; }
+  .prog-label { display: flex; justify-content: space-between; gap: 10px; margin: 7px 0 3px; font-size: 12px; }
+  .prog-label .dim { color: #333; }
+
+  /* ---------- Grille de jeu ---------- */
+  .grid { display: grid; grid-template-columns: 240px 1fr 300px; gap: 10px; margin-top: 10px; align-items: stretch; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+  .grid > div { display: flex; flex-direction: column; }
+  .grid > div > .grow { flex: 1 1 auto; min-height: 0; margin-bottom: 0; }
+  .fillbox { display: flex; flex-direction: column; }
+
+  .hero-name { font-size: 20px; font-weight: bold; }
+  .hero-title { font-size: 12px; font-style: italic; margin-bottom: 4px; }
+  .hero-meta { font-size: 12px; margin-bottom: 8px; }
+
+  .stat-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
+  .stat-row .val { font-weight: bold; }
+  .gold { font-weight: bold; }
+  .stats-line { font-size: 11px; text-align: center; margin-top: 7px; }
+
+  #log {
+    flex: 1 1 0; min-height: 320px; overflow-y: auto; font-size: 12px; line-height: 1.45;
+    background: #fff; border: 1px solid #000; padding: 5px;
+  }
+  #log p { margin-bottom: 1px; }
+  .log-system { font-style: italic; }
+  .log-loot { font-weight: bold; }
+  .log-combat { color: #7a1f1f; }
+  .log-level { font-weight: bold; }
+  .log-quest { font-weight: bold; }
+
+  .item { padding: 4px 6px; border: 1px solid #000; background: #fff; margin-bottom: 4px; font-size: 11px; line-height: 1.3; }
+  .item .iname { font-weight: bold; }
+  .item .isub { color: #333; }
+  .item.equipped { background: #e8ecff; }
+  .empty { color: #333; font-style: italic; font-size: 11px; }
+  #inventory { flex: 1 1 0; min-height: 200px; overflow-y: auto; }
+  #equipment { overflow-y: visible; }
+  #plotDev { height: 170px; overflow-y: auto; }
+  .plot-entry { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 0; border-bottom: 1px dotted #c0c0c0; }
+  .plot-entry input { margin: 0; }
+  .quest-box { border: 1px solid #000; background: #fff; padding: 6px; margin-bottom: 6px; font-size: 12px; }
+  .quest-name { font-weight: bold; }
+  .quest-desc { margin: 3px 0; font-size: 11px; }
+  .quest-reward { font-size: 11px; }
+  .spell { padding: 2px 5px; margin-bottom: 2px; background: #fff; border: 1px solid #000; font-size: 11px; }
+
+  /* ---------- Création ---------- */
+  #charCreation .content-wrap { max-width: 920px; }
+  .create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 800px) { .create-grid { grid-template-columns: 1fr; } }
+  .info { font-size: 11px; margin-top: 3px; min-height: 28px; }
+  .warning { color: #c00; font-size: 11px; min-height: 14px; margin-top: 3px; }
+  .stat-card {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 6px; border: 1px solid #000; background: #fff; margin-bottom: 4px;
+  }
+  .stat-card .sname { font-size: 12px; width: 110px; }
+  .stat-card .sdice { font-size: 11px; width: 60px; }
+  .stat-card .sval { font-size: 16px; font-weight: bold; min-width: 30px; text-align: center; }
+  .stat-card .sbonus { font-size: 12px; min-width: 46px; text-align: right; }
+  .roll-all-line {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 5px; font-size: 12px; padding: 5px 6px; border: 1px solid #000; background: #fff;
+  }
+  .tot-val { font-weight: bold; font-size: 14px; }
+  .tot-gray  { color: #808080; }
+  .tot-normal { color: #000; }
+  .tot-good  { color: #a47e00; }
+  .tot-high  { color: #c00; }
+  .tot-hint { font-size: 11px; }
+  .load-label { text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 5px; font-style: italic; }
+
+  /* ---------- Dialogue de mort ---------- */
+  #deathOverlay {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,0,0,.35); align-items: center; justify-content: center;
+  }
+  .dialog {
+    background: #fff; border: 1px solid #000;
+    max-width: 420px; padding: 2px;
+  }
+  .dialog-title { font-weight: bold; padding: 3px 8px; font-size: 13px; border-bottom: 1px solid #000; }
+  .dialog-body { padding: 16px; text-align: center; }
+  .dialog-body h2 { color: #a00; margin-bottom: 8px; font-size: 16px; }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 640px) {
+    body { font-size: 14px; padding-bottom: 46px; overflow-x: hidden; }
+    .content-wrap { padding: 8px; }
+    .page-title { font-size: 20px; }
+    .topbar { font-size: 13px; padding: 6px 8px; }
+    .topbar .winbtn { font-size: 13px; padding: 8px 10px; }
+    .winbtn { padding: 8px 12px; font-size: 14px; min-height: 42px; -webkit-tap-highlight-color: transparent; }
+    .winbtn.big { font-size: 16px; padding: 10px 20px; }
+    input[type="text"], select { font-size: 16px; padding: 8px; min-height: 42px; }
+    select { width: 100%; }
+    .name-row { flex-wrap: wrap; }
+    .name-row input { min-width: 0; flex: 1 1 140px; }
+    .gbox { padding: 8px; }
+    .gtitle { font-size: 14px; }
+    .seg { height: 16px; }
+    .segbar.big .seg { height: 20px; }
+    .hero-name { font-size: 18px; }
+    .stat-card .sname { width: auto; flex: 1 1 auto; }
+    .stat-card .sdice { width: auto; }
+    .stat-row { font-size: 13px; }
+    #log { font-size: 13px; }
+    .quest-box, .quest-desc, .quest-reward, .item, .plot-entry { font-size: 12px; }
+    .statusbar { height: 30px; font-size: 13px; }
+    .dialog { max-width: calc(100% - 20px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= BARRE DU HAUT (plein écran) ================= -->
+<header class="topbar">
+  <span id="topTitle">Questing Simulator — Création de personnage</span>
+  <span style="display:flex;gap:4px;flex-wrap:wrap;">
+    <button class="winbtn" id="btnNew">Nouvelle aventure</button>
+    <button class="winbtn" id="btnSave">Sauvegarder</button>
+    <button class="winbtn" id="btnExport">Exporter</button>
+    <button class="winbtn" id="btnImport">Importer</button>
+  </span>
+  <span class="clock" id="clockTop">--:--</span>
+  <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+</header>
+
+<!-- ================= ÉCRAN DE CRÉATION ================= -->
+<div id="charCreation">
+  <div class="content-wrap">
+    <div class="page-title">Création de personnage</div>
+    <div class="gbox gbox-inner">
+      <div class="create-grid">
+        <div>
+          <label for="nameInput">Nom du héros :</label>
+          <div class="name-row">
+            <input type="text" id="nameInput" maxlength="24">
+            <button class="winbtn" id="randNameBtn" title="Nom aléatoire">Aléatoire</button>
+          </div>
+          <div class="warning" id="nameWarn"></div>
+        </div>
+        <div>
+          <label for="raceSelect">Race :</label>
+          <select id="raceSelect"></select>
+          <div class="info" id="raceInfo"></div>
+        </div>
+        <div>
+          <label for="classSelect">Classe :</label>
+          <select id="classSelect"></select>
+          <div class="info" id="classInfo"></div>
+        </div>
+        <div>
+          <label>Stats de base (3d6 chacune)</label>
+          <div id="statsList"></div>
+          <div class="roll-all-line">
+            <span>Total : <span id="statTotal" class="tot-val tot-normal">0</span>
+              <span class="tot-hint">(moyenne : 63)</span></span>
+            <button class="winbtn" id="rollAllBtn">3d6&nbsp;Relancer tout</button>
+          </div>
+          <div class="tot-hint" style="margin-top:5px;">
+            3d6 par stat + bonus de race et de classe · Aucun plafond : vos stats montent sans limite.
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="winbtn big" id="startBtn">Commencer l'aventure</button>
+      </div>
+      <div id="loadingBox" style="display:none">
+        <div class="load-label" id="loadLabel">Génération de votre héros...</div>
+        <div class="segbar big" id="loadBar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JEU ================= -->
+<div id="gameUI" style="display:none">
+  <div class="content-wrap">
+    <div class="gbox gbox-inner">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+        <span class="hero-name" id="heroName">...</span>
+        <span class="hero-title" id="heroTitle"></span>
+      </div>
+      <div class="hero-meta" id="heroMeta"></div>
+
+      <div class="prog-label"><span id="actionLabel">Action : ...</span><span class="dim" id="actionTime"></span></div>
+      <div class="segbar big" id="actionBar"></div>
+
+      <div class="prog-label"><span>Quête : <span id="questShort">...</span></span><span class="dim" id="questTime"></span></div>
+      <div class="segbar big" id="questBar"></div>
+
+      <div class="prog-label"><span>Expérience</span><span class="dim" id="xpText">0 / 0</span></div>
+      <div class="segbar big" id="xpBar"></div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="gbox gbox-inner">
+          <div class="gtitle">Héros</div>
+          <div class="prog-label" style="margin-top:0;"><span>Vie</span><span id="hpText">0 / 0</span></div>
+          <div class="segbar" id="hpBar"></div>
+          <div style="margin-top:8px;">
+            <div class="stat-row"><span class="label">Niveau</span><span class="val" id="statLevel">1</span></div>
+            <div class="stat-row"><span class="label">Force (FOR)</span><span class="val" id="statStr">0</span></div>
+            <div class="stat-row"><span class="label">Constitution (CON)</span><span class="val" id="statCon">0</span></div>
+            <div class="stat-row"><span class="label">Dextérité (DEX)</span><span class="val" id="statDex">0</span></div>
+            <div class="stat-row"><span class="label">Intelligence (INT)</span><span class="val" id="statInt">0</span></div>
+            <div class="stat-row"><span class="label">Sagesse (SAG)</span><span class="val" id="statWis">0</span></div>
+            <div class="stat-row"><span class="label">Charisme (CHA)</span><span class="val" id="statCha">0</span></div>
+            <div class="stat-row"><span class="label">Dégâts</span><span class="val" id="statDmg">0</span></div>
+            <div class="stat-row"><span class="label">Armure</span><span class="val" id="statArmor">0</span></div>
+            <div class="stat-row"><span class="label">Kills</span><span class="val" id="statKills">0</span></div>
+            <div class="stat-row"><span class="label">Quêtes finies</span><span class="val" id="statQuests">0</span></div>
+            <div class="stat-row"><span class="label">Or</span><span class="val gold" id="statGold">0</span></div>
+            <div class="stat-row"><span class="label">Objets obtenus</span><span class="val" id="statItems">0</span></div>
+            <div class="stat-row"><span class="label">Morts</span><span class="val" id="statDeaths">0</span></div>
+          </div>
+          <div class="stats-line">Temps de partie : <span id="statTime">0s</span></div>
+        </div>
+        <div class="gbox gbox-inner grow">
+          <div class="gtitle">Sorts connus</div>
+          <div id="spells"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="gbox gbox-inner">
+          <div class="gtitle">Quête actuelle</div>
+          <div id="questBox"></div>
+        </div>
+        <div class="gbox gbox-inner grow fillbox" style="margin-bottom:0;">
+          <div class="gtitle">Journal d'aventure</div>
+          <div id="log"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="gbox gbox-inner">
+          <div class="gtitle">Développement de l'intrigue</div>
+          <div id="plotDev"></div>
+        </div>
+        <div class="gbox gbox-inner">
+          <div class="gtitle">Équipement</div>
+          <div id="equipment"></div>
+        </div>
+        <div class="gbox gbox-inner grow fillbox" style="margin-bottom:0;">
+          <div class="gtitle">Inventaire</div>
+          <div id="inventory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DIALOGUE DE MORT ================= -->
+<div id="deathOverlay">
+  <div class="dialog">
+    <div class="dialog-title">Questing Simulator</div>
+    <div class="dialog-body">
+      <h2>Vous êtes mort...</h2>
+      <p>Mais les divinités de ce monde ont un plan.</p>
+      <p style="color:#404040;margin-top:6px;font-size:11px;">(Résurrection automatique dans quelques secondes.)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BARRE DE STATUT BAS ================= -->
+<footer class="statusbar">
+  <span id="statusText">Prêt</span>
+  <span id="clockBottom">--:--</span>
+</footer>
+
+<script>
+"use strict";
+
+/* ============================================================
+   STATS : FOR, CON, DEX, INT, SAG, CHA
+   ============================================================ */
+
+const STAT_LABELS = { str: "Force", con: "Constitution", dex: "Dextérité", int: "Intelligence", wis: "Sagesse", cha: "Charisme" };
+const STAT_ORDER = ["str", "con", "dex", "int", "wis", "cha"];
+
+const AVG_TOTAL = 63; // moyenne de 6 × 3d6 (6 × 10,5)
+
+/* ============================================================
+   RACES
+   ============================================================ */
+
+const RACES = [
+  { name: "Trans-kobold",      bonus: { str: 0,  con: -1, dex: 2,  int: 1,  wis: 0,  cha: 0 }, desc: "Kobold, enfin la bonne enveloppe." },
+  { name: "Loup-garou femelle", bonus: { str: 2,  con: 0,  dex: 1,  int: 0,  wis: 0,  cha: 0 }, desc: "Griffe et hurle, surtout à la pleine lune." },
+  { name: "Aenigma",           bonus: { str: 0,  con: -1, dex: 0,  int: 3,  wis: 0,  cha: 0 }, desc: "Personne ne sait ce que c'est. Eux non plus." },
+  { name: "Kobold",            bonus: { str: -1, con: 0,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Petit, sournois, et toujours trop nombreux." },
+  { name: "Nain",              bonus: { str: 2,  con: 2,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Barbe, bière et pioche." },
+  { name: "Elfe sombre",       bonus: { str: 0,  con: -1, dex: 1,  int: 2,  wis: 0,  cha: 0 }, desc: "Sombres, pas forcément méchants. Souvent." },
+  { name: "Demi-orque",        bonus: { str: 3,  con: 1,  dex: 0,  int: -2, wis: 0,  cha: -1 }, desc: "La moitié qui tape le plus fort." },
+  { name: "Halfelin",          bonus: { str: -1, con: 0,  dex: 3,  int: 0,  wis: 0,  cha: 1 }, desc: "Petit, vif, et toujours affamé." },
+  { name: "Gobelin",           bonus: { str: 1,  con: -1, dex: 2,  int: -1, wis: 0,  cha: 0 }, desc: "Rusé, sauf quand il se prend les pieds." },
+  { name: "Gnome",             bonus: { str: -1, con: 1,  dex: 0,  int: 2,  wis: 0,  cha: 0 }, desc: "Invente des machines bizarres." },
+  { name: "Homme-rat",         bonus: { str: 0,  con: 1,  dex: 2,  int: 0,  wis: 0,  cha: 0 }, desc: "Ronge tout, stocke tout." },
+  { name: "Citrouille",        bonus: { str: 2,  con: 0,  dex: -1, int: 2,  wis: 0,  cha: -1 }, desc: "Effrayante, surtout en octobre." },
+  { name: "Tortue",            bonus: { str: 0,  con: 3,  dex: -2, int: 0,  wis: 1,  cha: 0 }, desc: "Lente, mais presque indestructible." },
+  { name: "Français",          bonus: { str: 1,  con: 1,  dex: 0,  int: 0,  wis: 0,  cha: 1 }, desc: "Poliment désolé, surtout en grève. Jamais pressé." },
+  { name: "Wallaby",           bonus: { str: 0,  con: 0,  dex: 3,  int: 0,  wis: 0,  cha: 0 }, desc: "Saute partout et donne des coups de pied." },
+  { name: "Morveux",           bonus: { str: -1, con: 1,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Dégoutant, mais diablement résilient." }
+];
+
+/* ============================================================
+   CLASSES (stat primaire + archétype de sorts)
+   ============================================================ */
+
+const CLASSES = [
+  { name: "Combattant",   primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 1,  con: 1,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Le grand classique." },
+  { name: "Barbare",      primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 2,  con: 0,  dex: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Crie, puis tape." },
+  { name: "Berserker",    primary: "str", secondary: "dex", archetype: "fighter",   bonus: { str: 2,  dex: 0,  con: 0,  int: 0,  wis: -1, cha: 0 }, desc: "Tape, puis crie." },
+  { name: "Paladin",      primary: "str", secondary: "wis", archetype: "holy",      bonus: { str: 1,  wis: 1,  con: 0,  dex: -1, int: 0,  cha: 0 }, desc: "Bon, et bien blindé." },
+  { name: "Chevalier",    primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 1,  con: 1,  dex: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Cheval, armure et morale." },
+  { name: "Maître d'épée", primary: "str", secondary: "dex", archetype: "fighter",  bonus: { str: 1,  dex: 1,  con: 0,  int: 0,  wis: 0,  cha: -1 }, desc: "La lame, tout simplement." },
+  { name: "Rôdeur",       primary: "dex", secondary: "int", archetype: "nature",    bonus: { dex: 1,  int: 1,  str: -1, con: 0,  wis: 0,  cha: 0 }, desc: "Sait se cacher très bien." },
+  { name: "Chasseur",     primary: "dex", secondary: "str", archetype: "nature",    bonus: { dex: 1,  str: 1,  con: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Une précision bestiale." },
+  { name: "Assassin",     primary: "dex", secondary: "str", archetype: "trickster", bonus: { dex: 2,  str: 0,  con: 0,  int: 0,  wis: 0,  cha: -1 }, desc: "Invisible, mortel, un peu d'ennui." },
+  { name: "Voleur",       primary: "dex", secondary: "int", archetype: "trickster", bonus: { dex: 1,  int: 1,  str: -1, con: 0,  wis: 0,  cha: 0 }, desc: "Tes poches sont déjà vides." },
+  { name: "Barde",        primary: "cha", secondary: "dex", archetype: "trickster", bonus: { cha: 2,  dex: 0,  con: -1, str: 0,  int: 0,  wis: 0 }, desc: "Fait danser les ennemis." },
+  { name: "Danseur",      primary: "dex", secondary: "cha", archetype: "trickster", bonus: { dex: 1,  cha: 1,  con: 0,  str: -1, int: 0,  wis: 0 }, desc: "La mort, en rythme." },
+  { name: "Magicien",     primary: "int", secondary: "dex", archetype: "mage",      bonus: { int: 1,  dex: 1,  con: -1, str: 0,  wis: 0,  cha: 0 }, desc: "Boule de feu. Encore une." },
+  { name: "Sorcier",      primary: "int", secondary: "dex", archetype: "mage",      bonus: { int: 2,  dex: 0,  con: -1, str: 0,  wis: 0,  cha: 0 }, desc: "Boule de feu, version sombre." },
+  { name: "Nécromancien", primary: "int", secondary: "con", archetype: "mage",      bonus: { int: 1,  con: 1,  cha: -1, str: 0,  dex: 0,  wis: 0 }, desc: "Ne manque jamais de main-d'œuvre." },
+  { name: "Prêtre",       primary: "wis", secondary: "con", archetype: "holy",      bonus: { wis: 1,  con: 1,  dex: -1, str: 0,  int: 0,  cha: 0 }, desc: "Bénédictions et menaces." },
+  { name: "Druide",       primary: "wis", secondary: "con", archetype: "nature",    bonus: { wis: 2,  con: 0,  int: -1, str: 0,  dex: 0,  cha: 0 }, desc: "Parle aux arbres. Ça aide." },
+  { name: "Écuyer",       primary: "str", secondary: "dex", archetype: "fighter",   bonus: { str: 1,  dex: 1,  wis: -1, con: 0,  int: 0,  cha: 0 }, desc: "Un jour, peut-être." }
+];
+
+const SPELL_POOLS = {
+  fighter: ["Coup de lapin", "Cri de guerre", "Frappe du forgeron", "Balayage", "Coup de bouclier", "Charge du taureau", "Provocation", "Tourbillon de haches", "Poing bionique", "Coup fatal"],
+  holy: ["Lumière divine", "Bénédiction du pain", "Reproche béni", "Guérison du doute", "Aura de puanteur sainte", "Marteau sacré", "Châtiment", "Sermon punitif", "Colère du palefrenier", "Grâce tardive"],
+  mage: ["Boule de feu", "Éclair", "Main de gloire", "Bourrasque", "Transmutation de chèvre", "Pluie de grenouilles", "Contrôle des marées", "Météore du chaos", "Explosion mineure (et tardive)", "Rappel des chaussettes"],
+  nature: ["Appel de la forêt", "Morsure d'ortie", "Racines grognonnes", "Invocation de chèvre", "Chant des oiseaux", "Bourdonnement", "Fertilisation", "Vent de feuilles", "Danse du lichen", "Séisme (très local)"],
+  trickster: ["Double pas", "Disparition", "Flèche sournoise", "Bourse légère", "Coup de l'ombre", "Séduction", "Piche voleuse", "Tour de passe-passe", "Coup bas légal", "Confusion totale"]
+};
+const SPELL_LEVELS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 20];
+
+/* ============================================================
+   NOMS, TITRES, ACTIONS, QUÊTES, MONSTRES
+   ============================================================ */
+
+const PRENOMS = [
+  "Grom", "Bob", "Zorak", "Gertrude", "Kevin", "Mireille", "Turbo", "Chaussette",
+  "Balthazar", "Gwendoline", "Krokmou", "Dujardin", "Titouan", "Vladimir", "Brunhilde",
+  "Serge", "Odile", "Roger", "Lucien", "Paquerette"
+];
+
+const ADJECTIFS = [
+  "le Magnifique", "l'Épique", "le Terrifiant", "le Plus Beau", "l'Indomptable",
+  "le Génial", "le Louche", "la Grande", "le Puissant", "l'Inarrêtable", "le Nauséabond"
+];
+
+const TITLES = [
+  "tueur de rats", "écorcheur de gobelins", "dévastateur d'araignées", "fléau des morts-vivants",
+  "briseur d'os", "frayeur des cavernes", "massacreur d'orcs", "pourfendeur de trolls",
+  "ennemi des dragons", "terreur du marais", "gardien de la taverne", "lame d'acier",
+  "chasseur de chèvres", "négociateur de poissonnier", "protecteur du poulailler"
+];
+
+const ACTION_VERBS = [
+  "Pourfend", "Extermine", "Déchiquette", "Harcèle", "Écrabouille", "Flatte",
+  "Palpe", "Fumige", "Grignote", "Dompte", "Interroge (brutalement)", "Caresse",
+  "Recherche", "Rassemble", "Compte (et recompte)", "Fouille", "Gratte", "Siffle vers"
+];
+
+const ACTION_TARGETS = [
+  "un Rat géant", "des ninjas", "les lémures", "un gobelin contrarié", "la chimère",
+  "un escalier", "la chaussette sacrée", "un orc", "le trèfle à cinq feuilles",
+  "un troll danseur", "le flan du boulanger", "une licorne", "le Béhémoth",
+  "les vrock", "un élan égaré", "le puits de la place", "un elfe exalté",
+  "la haie du château", "des pigeons", "un bout de ficelle", "le journal d'hier",
+  "la veuve Kowalski", "un grumeau de gruau", "le fond du tonneau"
+];
+
+/* Objets à chercher / rapporter / livrer (avec article inclus) */
+/* Chaque objet a un facteur de temps `t` (en secondes) : chercher
+   un objet plus lointain/caché prend plus de temps. */
+const QUEST_ITEMS = [
+  { name: "la chaussette sacrée",            t: 14 },
+  { name: "le trèfle à cinq feuilles",       t: 16 },
+  { name: "le flan du boulanger",            t: 10 },
+  { name: "le journal d'hier",               t: 8 },
+  { name: "l'anneau du puits",               t: 18 },
+  { name: "le bout de ficelle",              t: 6 },
+  { name: "le casque du chevalier",          t: 22 },
+  { name: "la lune (réfléchie dans le lac)", t: 30 },
+  { name: "la recette du gruau",             t: 10 },
+  { name: "le bouton de manchette du roi",   t: 20 },
+  { name: "la boîte à bruits",               t: 14 },
+  { name: "le parchemin illisible",          t: 16 },
+  { name: "le porte-clés du sorcier",        t: 12 },
+  { name: "la moitié de clé",                t: 10 },
+  { name: "le collier du lévrier",           t: 14 },
+  { name: "la dent de rat géant",            t: 9 },
+  { name: "le bouchon de potion (vide)",     t: 8 },
+  { name: "la carte au trésor (dessinée au dos)", t: 26 },
+  { name: "le chapeau de souris",            t: 12 },
+  { name: "le talon de bottine de l'elfe",   t: 16 },
+  { name: "l'échelle du fermier",            t: 18 },
+  { name: "le miroir du regret",             t: 24 }
+];
+
+const DELIVER_RECIPIENTS = [
+  "la veuve Kowalski", "le boulanger", "le maire", "le sorcier de la tour",
+  "le nain du pont", "le Canadien (sur son élan)", "la sorcière de la forêt",
+  "le capitaine des gardes", "le roi (déguisé en roturier)", "la guilde des voleurs",
+  "le bibliothécaire grognon", "la fermière du plateau", "le dragon (méfiant)", "la taupe archiviste"
+];
+
+/* Objets uniques, récompenses de quête */
+const UNIQUE_ITEMS = [
+  "la Lampe du Poulailler", "le Casque du Silence", "l'Épée en liège", "le Compas du Néant",
+  "le Chapeau du Maire (officiel)", "l'Ombrelle de la pluie rouge", "la Clé de la cave du roi",
+  "le Miroir du regret", "le Traité des chèvres", "l'Écharpe du gobelin défunt",
+  "la Boucle de ceinture du barde", "le Tambour en carton", "le Serpent en caoutchouc",
+  "la Louche du destin", "l'Horloge à moutons", "le Parfum de troll (édition limitée)",
+  "la Cartouche d'encre vide", "le Faux moustachu du général", "la Pierre du trône",
+  "le Réveil de la veuve", "la Théière du lac", "le Bouclier de beurre (fondu)"
+];
+
+const MONSTERS = [
+  { name: "Rat géant",          lvl: 1,  gold: [1,3] },
+  { name: "Chauve-souris",      lvl: 1,  gold: [1,2] },
+  { name: "Gobelin",            lvl: 2,  gold: [2,5] },
+  { name: "Squelette",          lvl: 3,  gold: [3,7] },
+  { name: "Araignée des cavernes", lvl: 3, gold: [3,6] },
+  { name: "Zombie",             lvl: 4,  gold: [5,10] },
+  { name: "Orc",                lvl: 5,  gold: [7,14] },
+  { name: "Loup",               lvl: 5,  gold: [6,12] },
+  { name: "Serpent venimeux",   lvl: 6,  gold: [8,15] },
+  { name: "Bandit",             lvl: 6,  gold: [9,16] },
+  { name: "Goule",              lvl: 7,  gold: [10,18] },
+  { name: "Ogre",               lvl: 8,  gold: [15,30] },
+  { name: "Troll",              lvl: 9,  gold: [18,35] },
+  { name: "Golem de pierre",    lvl: 10, gold: [22,40] },
+  { name: "Mage noir",          lvl: 11, gold: [25,45] },
+  { name: "Dragonnet",          lvl: 12, gold: [30,55] },
+  { name: "Géant",              lvl: 13, gold: [40,70] },
+  { name: "Licorne sombre",     lvl: 14, gold: [45,80] },
+  { name: "Béhémoth",           lvl: 16, gold: [60,110] },
+  { name: "Dragon ancien",      lvl: 18, gold: [90,160] },
+  { name: "Chèvre enragée",     lvl: 1,  gold: [1,2] },
+  { name: "Slime gluant",       lvl: 1,  gold: [1,3] },
+  { name: "Gargouille",         lvl: 9,  gold: [20,38] },
+  { name: "Chimère",            lvl: 15, gold: [55,95] },
+  { name: "Ninja",              lvl: 4,  gold: [5,9] },
+  { name: "Lémure",             lvl: 2,  gold: [2,4] },
+  { name: "Vrock",              lvl: 10, gold: [22,40] },
+  { name: "Elan domestiqué",    lvl: 3,  gold: [3,6] }
+];
+
+const MONSTER_PLURALS = {
+  "Rat géant": "Rats géants", "Chauve-souris": "Chauves-souris", "Gobelin": "Gobelins",
+  "Squelette": "Squelettes", "Araignée des cavernes": "Araignées des cavernes", "Zombie": "Zombies",
+  "Orc": "Orcs", "Loup": "Loups", "Serpent venimeux": "Serpents venimeux", "Bandit": "Bandits",
+  "Goule": "Goules", "Ogre": "Ogres", "Troll": "Trolls", "Golem de pierre": "Golems de pierre",
+  "Mage noir": "Mages noirs", "Dragonnet": "Dragonnets", "Géant": "Géants",
+  "Licorne sombre": "Licornes sombres", "Béhémoth": "Béhémoths", "Dragon ancien": "Dragons anciens",
+  "Chèvre enragée": "Chèvres enragées", "Slime gluant": "Slimes gluants", "Gargouille": "Gargouilles",
+  "Chimère": "Chimères", "Ninja": "Ninjas", "Lémure": "Lémures", "Vrock": "Vrocks",
+  "Elan domestiqué": "Élans domestiqués"
+};
+
+function monsterPlural(name) { return MONSTER_PLURALS[name] || name + "s"; }
+
+/* ============================================================
+   ÉQUIPEMENT & OBJETS ABSURDES
+   ============================================================ */
+
+const EQUIP_BASES = [
+  { slot: "arme",   base: "Bâton",               dmg: [2,5],  armor: [0,0] },
+  { slot: "arme",   base: "Lame",                dmg: [3,6],  armor: [0,0] },
+  { slot: "arme",   base: "Hache en plastique",  dmg: [2,6],  armor: [0,0] },
+  { slot: "arme",   base: "Épée en bois",        dmg: [1,4],  armor: [0,0] },
+  { slot: "arme",   base: "Couteau à beurre",    dmg: [1,3],  armor: [0,0] },
+  { slot: "arme",   base: "Marteau à fromage",   dmg: [3,7],  armor: [0,0] },
+  { slot: "arme",   base: "Pic à glace",         dmg: [2,4],  armor: [0,0] },
+  { slot: "tete",   base: "Casque",              dmg: [0,0],  armor: [2,5] },
+  { slot: "tete",   base: "Bonnet de nuit",      dmg: [0,0],  armor: [1,3] },
+  { slot: "tete",   base: "Casque à pointe",     dmg: [0,0],  armor: [2,4] },
+  { slot: "torse",  base: "Flanelle",            dmg: [0,0],  armor: [3,7] },
+  { slot: "torse",  base: "Tunique",             dmg: [0,0],  armor: [2,6] },
+  { slot: "torse",  base: "Bandeau de maman",    dmg: [0,0],  armor: [1,2] },
+  { slot: "jambes", base: "Collant",             dmg: [0,0],  armor: [2,5] },
+  { slot: "jambes", base: "Pantalon",            dmg: [0,0],  armor: [2,4] },
+  { slot: "jambes", base: "Chausses dépareillées", dmg: [0,0], armor: [1,3] },
+  { slot: "pieds",  base: "Chausson",            dmg: [0,0],  armor: [1,4] },
+  { slot: "pieds",  base: "Sandale",             dmg: [0,0],  armor: [1,2] },
+  { slot: "pieds",  base: "Bottine gauche",      dmg: [0,0],  armor: [2,4] },
+  { slot: "mains",  base: "Mitaine",             dmg: [0,0],  armor: [1,3] },
+  { slot: "mains",  base: "Gant de vaisselle",   dmg: [0,0],  armor: [1,2] },
+  { slot: "anneau", base: "Anneau",              dmg: [0,2],  armor: [0,1] },
+  { slot: "anneau", base: "Élastique",           dmg: [0,1],  armor: [0,0] },
+  { slot: "amule",  base: "Amulette",            dmg: [0,2],  armor: [0,1] },
+  { slot: "amule",  base: "Bretelle",            dmg: [0,1],  armor: [0,1] }
+];
+
+const ADJ1 = ["Émoussé", "Corrodé", "Terne", "Poussiéreux", "Moite", "Luisant", "Éclatant", "Délavé", "Dentelé", "Sacré", "Maudit", "Chaud", "Aiguisé", "Rouillé", "Propre (rare)"];
+const ADJ2 = ["Fade", "Déchiré", "Plissé", "Rembourré", "Troué", "Réfléchissant", "Élastique", "Givré", "Piquant", "Bariolé", "Sournois", "Géant", "Mini", "Volant"];
+
+const JUNK = [
+  "un portefeuille de rate", "un bec d'autruche", "un échantillon de slime vert",
+  "une trompe de stirge", "un collier de lévrier", "une chaussette de gobelin",
+  "une dent de rat", "un bout de ficelle", "le talon de bottine de l'elfe",
+  "un grumeau de gruau", "un ongle de béhémoth", "une plume de pigeon",
+  "un bouchon de bouteille de sorcier", "une moitié de clé", "un morceau de chandelle",
+  "une patte de crabe", "un éclat d'épée de bois", "le journal d'hier",
+  "une pièce très brillante (fausse)", "un caillou significatif", "un chapeau de souris",
+  "une pelote de laine de troll", "un bruit (dans une boîte)", "une carotte suspecte"
+];
+
+const SLOT_LABELS = { arme: "Arme", tete: "Tête", torse: "Torse", jambes: "Jambes", pieds: "Pieds", mains: "Mains", anneau: "Anneau", amule: "Amulette" };
+
+const START_VERBS = ["engage le combat contre", "fonce sur", "surprend", "affronte", "pourchasse", "tombe nez à nez avec"];
+const KILL_VERBS = ["terrasse", "réduit en miettes", "expédie", "élimine", "met en pièces", "envoie bouler"];
+const RETREAT_MSGS = [
+  "est trop coriace, vous battez en retraite sans butin.",
+  "vous repousse, vous cherchez une cible plus raisonnable.",
+  "s'avère être une brute, vous décidez de revenir plus tard."
+];
+
+/* ============================================================
+   CONSTANTES DE JEU
+   ============================================================ */
+
+const MIN_ACTION = 3;       // durée d'action minimale (s)
+const MAX_ACTION = 25;      // durée d'action maximale (s)
+const MAX_KILL_TARGET = 8;  // cap sur le nombre de monstres à exterminer
+const MAX_QUEST_TIME = 300; // cap sur la durée d'une quête (5 min)
+const SAVE_KEY = "questingSimulatorWin95Save";
+const SAVE_INTERVAL = 30000; // 30 secondes
+const TICK_MS = 1000;
+const VERSION = 7;
+
+let game = null;
+
+const creation = {
+  name: "",
+  race: null,
+  cls: null,
+  base: { str: 0, con: 0, dex: 0, int: 0, wis: 0, cha: 0 }
+};
+
+/* ============================================================
+   ÉCRAN DE CRÉATION
+   ============================================================ */
+
+function roll3d6() {
+  let t = 0;
+  for (let i = 0; i < 3; i++) t += 1 + Math.floor(Math.random() * 6);
+  return t;
+}
+
+function rollAllStats() {
+  for (const k in creation.base) creation.base[k] = roll3d6();
+  renderCreation();
+}
+
+function finalStat(k) {
+  const br = creation.race ? creation.race.bonus[k] : 0;
+  const bc = creation.cls ? creation.cls.bonus[k] : 0;
+  const b = br + bc;
+  return { value: Math.max(3, creation.base[k] + b), bonus: b };
+}
+
+function totalClass(t) {
+  if (t < 58) return "tot-gray";       // moins que la moyenne
+  if (t <= 68) return "tot-normal";    // normal
+  if (t <= 75) return "tot-good";      // au-dessus de la normale
+  return "tot-high";                   // beaucoup !
+}
+
+function renderTotal() {
+  let total = 0;
+  STAT_ORDER.forEach(function (k) { total += finalStat(k).value; });
+  const el = document.getElementById("statTotal");
+  el.textContent = total;
+  el.className = "tot-val " + totalClass(total);
+}
+
+function randomName() { return pick(PRENOMS) + " " + pick(ADJECTIFS); }
+
+function bonusText(bonus) {
+  const parts = [];
+  for (const k in bonus) {
+    const v = bonus[k];
+    if (v !== 0) parts.push((v > 0 ? "+" : "") + v + " " + STAT_LABELS[k].toLowerCase());
+  }
+  return parts.length ? parts.join(", ") : "Aucun bonus";
+}
+
+function renderCreation() {
+  const statsList = document.getElementById("statsList");
+  statsList.innerHTML = "";
+  STAT_ORDER.forEach(function (k) {
+    const f = finalStat(k);
+    const card = document.createElement("div");
+    card.className = "stat-card";
+    card.innerHTML =
+      '<span class="sname">' + STAT_LABELS[k] + '</span>' +
+      '<span class="sdice">3d6 : ' + creation.base[k] + '</span>' +
+      '<span class="sval">' + f.value + '</span>' +
+      '<span class="sbonus">' + (f.bonus > 0 ? "+" + f.bonus : f.bonus === 0 ? "" : f.bonus) + '</span>' +
+      '<button class="winbtn" data-roll="' + k + '">3d6</button>';
+    card.querySelector("button").addEventListener("click", function () {
+      creation.base[k] = roll3d6();
+      renderCreation();
+    });
+    statsList.appendChild(card);
+  });
+  renderTotal();
+
+  const raceSel = document.getElementById("raceSelect");
+  const classSel = document.getElementById("classSelect");
+  raceSel.innerHTML = "";
+  classSel.innerHTML = "";
+  RACES.forEach(function (r, i) {
+    const o = document.createElement("option");
+    o.value = i;
+    o.textContent = r.name;
+    raceSel.appendChild(o);
+  });
+  CLASSES.forEach(function (c, i) {
+    const o = document.createElement("option");
+    o.value = i;
+    o.textContent = c.name;
+    classSel.appendChild(o);
+  });
+  if (creation.race) raceSel.value = RACES.indexOf(creation.race);
+  if (creation.cls) classSel.value = CLASSES.indexOf(creation.cls);
+  updateInfo();
+  document.getElementById("startBtn").disabled = !(creation.name.trim() && creation.race && creation.cls);
+}
+
+function updateInfo() {
+  const ri = document.getElementById("raceInfo");
+  const ci = document.getElementById("classInfo");
+  ri.textContent = creation.race ? "Bonus : " + bonusText(creation.race.bonus) + " — " + creation.race.desc : "";
+  ci.textContent = creation.cls ? "Bonus : " + bonusText(creation.cls.bonus) + " — " + creation.cls.desc + " Sorts d'" + creation.cls.archetype + "." : "";
+}
+
+document.getElementById("raceSelect").addEventListener("change", function (e) {
+  creation.race = RACES[parseInt(e.target.value, 10)];
+  renderCreation();
+});
+
+document.getElementById("classSelect").addEventListener("change", function (e) {
+  creation.cls = CLASSES[parseInt(e.target.value, 10)];
+  renderCreation();
+});
+
+document.getElementById("nameInput").addEventListener("input", function (e) {
+  creation.name = e.target.value.trim();
+  document.getElementById("nameWarn").textContent = "";
+  document.getElementById("startBtn").disabled = !(creation.name && creation.race && creation.cls);
+});
+
+document.getElementById("randNameBtn").addEventListener("click", function () {
+  const n = randomName();
+  document.getElementById("nameInput").value = n;
+  creation.name = n;
+  document.getElementById("nameWarn").textContent = "";
+  document.getElementById("startBtn").disabled = !(creation.name && creation.race && creation.cls);
+});
+
+document.getElementById("rollAllBtn").addEventListener("click", function () {
+  rollAllStats();
+});
+
+const LOAD_MSGS = [
+  "Génération du visage...", "Tirage des 3d6...", "Achat de l'équipement de départ...",
+  "Consultation de la guilde...", "Recherche d'une quête absurde...", "Mise à jour du fichier de personnage...",
+  "Cirage de la cotte de mailles...", "Apprentissage du premier sort...", "Validation auprès du maire du village..."
+];
+
+function startAdventure() {
+  if (!creation.name.trim()) { document.getElementById("nameWarn").textContent = "Donnez un nom à votre héros !"; return; }
+  if (!creation.race) { document.getElementById("nameWarn").textContent = "Choisissez une race !"; return; }
+  if (!creation.cls) { document.getElementById("nameWarn").textContent = "Choisissez une classe !"; return; }
+
+  const btn = document.getElementById("startBtn");
+  btn.disabled = true;
+  const box = document.getElementById("loadingBox");
+  const label = document.getElementById("loadLabel");
+  box.style.display = "block";
+  const TOTAL_SEGS = 12;
+  let seg = 0;
+  const iv = setInterval(function () {
+    seg += 1;
+    renderSeg("loadBar", TOTAL_SEGS, seg);
+    label.textContent = pick(LOAD_MSGS);
+    if (seg >= TOTAL_SEGS) {
+      clearInterval(iv);
+      setTimeout(function () {
+        newGame();
+        render();
+        document.getElementById("topTitle").textContent = "Questing Simulator";
+        document.getElementById("charCreation").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        save();
+      }, 300);
+    }
+  }, 150);
+}
+
+document.getElementById("startBtn").addEventListener("click", startAdventure);
+
+/* ============================================================
+   CRÉATION DU PERSONNAGE
+   ============================================================ */
+
+function newGame() {
+  game = {
+    version: VERSION,
+    name: creation.name,
+    race: creation.race,
+    class: creation.cls,
+    baseStats: Object.assign({}, creation.base),
+    level: 1,
+    xp: 0,
+    hp: 100, maxHp: 100,
+    gold: 0,
+    stats: { str: 0, con: 0, dex: 0, int: 0, wis: 0, cha: 0 },
+    kills: 0,
+    questsDone: 0,
+    itemsFound: 0,
+    deaths: 0,
+    totalTime: 0,
+    quest: null,
+    questLog: [],
+    actionMonster: null,
+    actionDuration: 5,
+    actionTimer: 0,
+    actionText: "",
+    spells: [],
+    equipped: { arme: null, tete: null, torse: null, jambes: null, pieds: null, mains: null, anneau: null, amule: null },
+    inventory: [],
+    log: [],
+    dead: false,
+    deathTimer: 0
+  };
+
+  const br = creation.race.bonus;
+  const bc = creation.cls.bonus;
+  STAT_ORDER.forEach(function (k) {
+    game.stats[k] = clampStat(creation.base[k] + br[k] + bc[k]);
+  });
+  game.maxHp = 50 + game.stats.con * 8;
+  game.hp = game.maxHp;
+  startQuest();
+  startNextAction();
+  checkSpellLearning();
+  log("system", "Votre aventure commence, " + game.name + " !");
+  log("system", "Race : " + game.race.name + " — Classe : " + game.class.name + " (basée sur la " + STAT_LABELS[game.class.primary].toLowerCase() + ").");
+  log("quest", "Quête acceptée : « " + game.quest.text + " ».");
+}
+
+function clampStat(v) { return Math.max(3, v); }
+
+/* ============================================================
+   QUÊTES ABSURDES (Deliver / Exterminate / Fetch / Seek)
+   ============================================================ */
+
+const QUEST_TYPES = ["deliver", "exterminate", "fetch", "seek"];
+const QUEST_TYPE_LABELS = { deliver: "Livraison", exterminate: "Extermination", fetch: "Récupération", seek: "Recherche" };
+
+function startQuest() {
+  const type = pick(QUEST_TYPES);
+  const q = {
+    type: type,
+    text: "",
+    target: "",
+    count: 0,
+    need: 0,
+    duration: MAX_QUEST_TIME,
+    time: 0
+  };
+
+  if (type === "exterminate") {
+    const mons = pick(monsterPool());
+    q.target = mons.name;
+    q.need = Math.min(MAX_KILL_TARGET, randBetween(2, 2 + Math.floor(game.level / 3)));
+    q.text = "Extermine " + q.need + " " + monsterPlural(mons.name) + ".";
+    // Plus il y a de monstres, plus la quête est longue (~20-25 s par monstre).
+    q.duration = Math.min(MAX_QUEST_TIME, q.need * randBetween(20, 26) + randBetween(0, 30));
+  } else if (type === "deliver") {
+    const it = pick(QUEST_ITEMS);
+    q.target = pick(DELIVER_RECIPIENTS);
+    q.text = "Remets " + it.name + " à " + q.target + ".";
+    q.duration = Math.min(MAX_QUEST_TIME, it.t + game.level * 3 + randBetween(10, 45));
+  } else if (type === "fetch") {
+    const it = pick(QUEST_ITEMS);
+    q.text = "Rapporte " + it.name + ".";
+    q.duration = Math.min(MAX_QUEST_TIME, it.t + game.level * 3 + randBetween(10, 40));
+  } else { // seek
+    const it = pick(QUEST_ITEMS);
+    q.text = "Cherche " + it.name + ".";
+    q.duration = Math.min(MAX_QUEST_TIME, it.t + game.level * 3 + randBetween(10, 40));
+  }
+
+  game.quest = q;
+  game.questLog.push({ text: q.text, done: false });
+}
+
+function completeQuest() {
+  game.questsDone += 1;
+  const bonusXp = Math.round((60 + game.level * 28) * xpMultiplier());
+  const bonusGold = 30 + game.level * 12;
+  game.xp += bonusXp;
+  game.gold += bonusGold;
+  log("quest", "Quête terminée : « " + game.quest.text + " » (+" + bonusXp + " XP, +" + bonusGold + " or).");
+  questReward();
+  sellAllInventory();
+  if (game.questLog.length) game.questLog[game.questLog.length - 1].done = true;
+  startQuest();
+  log("quest", "Nouvelle quête : « " + game.quest.text + " » (durée ~" + game.quest.duration + "s).");
+  checkLevelUp();
+}
+
+/* ============================================================
+   RÉCOMPENSES DE QUÊTE (une parmi quatre, au hasard)
+   ============================================================ */
+
+function questReward() {
+  const roll = randBetween(1, 4);
+  if (roll === 1) rewardUniqueItem();
+  else if (roll === 2) rewardEquipment();
+  else if (roll === 3) rewardStat();
+  else rewardSpell();
+}
+
+function rewardUniqueItem() {
+  const item = { id: uid(), kind: "unique", name: pick(UNIQUE_ITEMS), slot: "divers", dmg: 0, armor: 0 };
+  game.itemsFound += 1;
+  game.inventory.push(item);
+  log("loot", "Récompense : objet unique — " + item.name + " !");
+}
+
+function rewardEquipment() {
+  const item = generateEquip(game.level);
+  game.itemsFound += 1;
+  if (autoEquip(item)) {
+    log("loot", "Récompense : " + item.name + " — équipé immédiatement !");
+  } else {
+    game.inventory.push(item);
+    log("loot", "Récompense : " + item.name + " (rangé dans l'inventaire).");
+  }
+}
+
+function rewardStat() {
+  const k = pick(STAT_ORDER);
+  game.stats[k] += 1;
+  log("level", "Récompense de quête : +1 " + STAT_LABELS[k].toLowerCase() + " !");
+}
+
+function rewardSpell() {
+  const pool = SPELL_POOLS[game.class.archetype] || [];
+  const known = game.spells.map(function (s) { return s.name; });
+  const available = pool.filter(function (n) { return known.indexOf(n) === -1; });
+  if (available.length > 0) {
+    const name = pick(available);
+    game.spells.push({ name: name, lvl: 1 });
+    log("level", "Récompense : vous apprenez un nouveau sort « " + name + " » !");
+  } else if (game.spells.length > 0) {
+    const s = pick(game.spells);
+    s.lvl += 1;
+    log("level", "Récompense : « " + s.name + " » passe au niveau " + s.lvl + " !");
+  } else {
+    const goldGain = 40;
+    game.gold += goldGain;
+    log("loot", "Récompense : le grimoire est vide, vous trouvez " + goldGain + " or à la place.");
+  }
+}
+
+/* ============================================================
+   PROGRESSION BASÉE SUR LES STATS + SORTS
+   ============================================================ */
+
+function primaryStat() { return game.stats[game.class.primary]; }
+function secondaryStat() { return game.stats[game.class.secondary]; }
+
+function xpMultiplier() {
+  return 1 + Math.max(0, primaryStat() - 8) * 0.04;
+}
+
+function spellPower() {
+  const pool = SPELL_POOLS[game.class.archetype] || [];
+  let p = 0;
+  game.spells.forEach(function (s) {
+    const i = pool.indexOf(s.name);
+    if (i >= 0) p += (2 + i * 2) * (1 + (s.lvl - 1) * 0.5);
+  });
+  return p;
+}
+
+function heroPower() {
+  const dmg = weaponDamage();
+  return dmg + primaryStat() * 2.2 + secondaryStat() * 0.8 + game.stats.dex * 0.3 + game.stats.wis * 0.2 + game.stats.cha * 0.1 + spellPower();
+}
+
+function weaponDamage() {
+  const eq = game.equipped.arme;
+  let d = 2 + Math.floor(game.level * 1.5) + Math.floor(game.stats.str / 2);
+  if (eq) d += eq.dmg;
+  return d;
+}
+
+function armorRating() {
+  let a = 0;
+  for (const k in game.equipped) {
+    if (game.equipped[k]) a += game.equipped[k].armor;
+  }
+  return a + Math.floor(game.stats.con / 3);
+}
+
+function checkSpellLearning() {
+  const pool = SPELL_POOLS[game.class.archetype] || [];
+  for (let i = 0; i < pool.length; i++) {
+    const known = game.spells.some(function (s) { return s.name === pool[i]; });
+    if (game.level >= SPELL_LEVELS[i] && !known) {
+      game.spells.push({ name: pool[i], lvl: 1 });
+      log("level", "Vous apprenez un nouveau sort : « " + pool[i] + " » !");
+    }
+  }
+}
+
+/* ============================================================
+   BOUCLE DE JEU (1 tic / seconde, action = 5 s)
+   ============================================================ */
+
+function tick() {
+  if (!game) return;
+  game.totalTime += 1;
+
+  if (game.dead) {
+    game.deathTimer -= 1;
+    if (game.deathTimer <= 0) revive();
+    return;
+  }
+
+  game.actionTimer += 1;
+  game.quest.time += 1;
+
+  if (game.hp < game.maxHp && Math.random() < 0.3) {
+    const regen = Math.ceil(game.maxHp * 0.04) + Math.ceil(game.stats.con / 3);
+    game.hp = Math.min(game.maxHp, game.hp + regen);
+  }
+
+  applyPerSecondDamage();
+  if (game.hp <= 0) { die(); return; }
+
+  if (game.actionTimer >= game.actionDuration) {
+    resolveAction();
+  }
+
+  const q = game.quest;
+  const done = q.type === "exterminate" ? (q.count >= q.need || q.time >= q.duration) : q.time >= q.duration;
+  if (done) {
+    completeQuest();
+  }
+}
+
+function applyPerSecondDamage() {
+  const mons = game.actionMonster;
+  if (!mons) return;
+  if (Math.random() < game.stats.dex * 0.015) return; // esquive
+  if (Math.random() < 0.55) {
+    const mDmg = 1 + Math.floor(mons.lvl * 1.6);
+    const raw = Math.round(mDmg * (0.3 + Math.random() * 0.6)) - armorRating();
+    const dmg = Math.max(0, raw - Math.floor(Math.max(0, raw) * 0.1));
+    game.hp -= dmg;
+  }
+}
+
+function resolveAction() {
+  const mons = game.actionMonster;
+  if (!mons) { startNextAction(); return; }
+
+  const mHp = 12 + mons.lvl * 7;
+  const chance = heroPower() / (heroPower() + mHp * 0.8);
+  const heroWins = Math.random() < Math.max(0.08, Math.min(0.97, chance));
+
+  if (heroWins) {
+    const xpGain = Math.max(1, Math.round((mons.lvl * 4 + 3) * (0.8 + Math.random() * 0.6) * xpMultiplier()));
+    const goldGain = randBetween(mons.gold[0], mons.gold[1]);
+    game.xp += xpGain;
+    game.gold += goldGain;
+    game.kills += 1;
+    if (game.quest.type === "exterminate" && game.quest.target === mons.name) {
+      game.quest.count += 1;
+    }
+    log("combat", "Le héros " + pick(KILL_VERBS) + " " + article(mons.name) + " " + mons.name + " (+" + xpGain + " XP, +" + goldGain + " or).");
+    maybeDropItem(mons);
+    checkLevelUp();
+  } else {
+    log("combat", "Le " + mons.name + " " + pick(RETREAT_MSGS));
+  }
+
+  if (!game.dead) startNextAction();
+}
+
+function monsterPool() {
+  const pool = MONSTERS.filter(function (m) { return m.lvl <= game.level + 2 && m.lvl >= Math.max(1, game.level - 3); });
+  return pool.length ? pool : MONSTERS;
+}
+
+function startNextAction() {
+  const mons = pick(monsterPool());
+  game.actionMonster = mons;
+  game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
+  game.actionTimer = 0;
+  game.actionText = pick(ACTION_VERBS) + " " + pick(ACTION_TARGETS) + "...";
+}
+
+function article(name) {
+  const fem = {
+    "Araignée des cavernes": 1, "Chauve-souris": 1, "Licorne sombre": 1,
+    "Chèvre enragée": 1, "Chimère": 1, "Gargouille": 1, "Goule": 1
+  };
+  return fem[name] || /^[AEIOUYÀÉÊÎÔ]/.test(name) ? "une" : "un";
+}
+
+function die() {
+  game.dead = true;
+  game.deaths += 1;
+  game.deathTimer = 8;
+  const lostGold = Math.floor(game.gold * 0.1);
+  game.gold -= lostGold;
+  showDeath();
+  log("system", "Vous êtes mort ! Vous perdez " + lostGold + " pièces d'or. Résurrection en cours...");
+}
+
+function revive() {
+  game.dead = false;
+  game.hp = game.maxHp;
+  hideDeath();
+  log("system", "Un clerc de passage vous ressuscite. Vous reprenez la route !");
+  startNextAction();
+}
+
+function checkLevelUp() {
+  const needed = xpNeeded(game.level);
+  if (game.xp >= needed) {
+    game.xp -= needed;
+    game.level += 1;
+    STAT_ORDER.forEach(function (k) { game.stats[k] += 1; });
+    game.maxHp += 15 + game.stats.con;
+    game.hp = game.maxHp;
+    log("level", "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau " + game.level + " (+1 à tous les attributs).");
+    log("system", "Nouveau titre : " + titleForLevel(game.level));
+    checkSpellLearning();
+    checkLevelUp();
+  }
+}
+
+function xpNeeded(lvl) {
+  return Math.floor(80 * Math.pow(1.45, lvl - 1));
+}
+
+function titleForLevel(lvl) {
+  const idx = Math.min(TITLES.length - 1, Math.floor((lvl - 1) / 2));
+  return TITLES[idx] + " niveau " + lvl;
+}
+
+/* ============================================================
+   BUTIN : ÉQUIPEMENT À ADJECTIFS + OBJETS ABSURDES
+   ============================================================ */
+
+function maybeDropItem(mons) {
+  const roll = Math.random();
+  if (roll < 0.15) {
+    const item = generateEquip(mons.lvl);
+    game.itemsFound += 1;
+    if (autoEquip(item)) {
+      log("loot", "Butin : " + item.name + " — équipé immédiatement !");
+    } else {
+      game.inventory.push(item);
+      log("loot", "Butin : " + item.name + " (rangé dans l'inventaire).");
+    }
+  } else if (roll < 0.42) {
+    const item = { id: uid(), kind: "junk", name: pick(JUNK), slot: "divers", dmg: 0, armor: 0 };
+    game.itemsFound += 1;
+    game.inventory.push(item);
+    log("loot", "Objet absurde : " + item.name + " (vous le gardez quand même).");
+  }
+}
+
+function generateEquip(mLevel) {
+  const t = pick(EQUIP_BASES);
+  const mult = 0.8 + Math.random() * 0.9;
+  const lvl = Math.max(1, Math.round(mLevel * (0.8 + Math.random() * 0.5)));
+  const item = {
+    id: uid(),
+    kind: "equip",
+    slot: t.slot,
+    base: t.base,
+    level: lvl,
+    dmg: 0,
+    armor: 0
+  };
+  item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * mult));
+  item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * mult));
+  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base;
+  return item;
+}
+
+function autoEquip(item) {
+  if (item.kind !== "equip") return false;
+  const cur = game.equipped[item.slot];
+  if (!cur) { game.equipped[item.slot] = item; return true; }
+  const score = function (i) { return i.dmg * 1.6 + i.armor; };
+  if (score(item) > score(cur) * 1.05) {
+    const old = cur;
+    game.equipped[item.slot] = item;
+    game.inventory.push(old);
+    return true;
+  }
+  return false;
+}
+
+function sellPrice(it) {
+  if (it.kind === "junk" || it.kind === "unique") return randBetween(5, 15);
+  return Math.max(1, Math.floor((it.dmg + it.armor) * 3 + it.level * 2));
+}
+
+function sellAllInventory() {
+  if (!game.inventory.length) return;
+  let total = 0;
+  game.inventory.forEach(function (it) { total += sellPrice(it); });
+  game.gold += total;
+  log("loot", "Le héros vend tout son inventaire (" + game.inventory.length + " objets) pour " + total + " or.");
+  game.inventory = [];
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+/* ============================================================
+   LOG & AFFICHAGE
+   ============================================================ */
+
+function log(type, text) {
+  game.log.push({ type: type, text: text });
+  if (game.log.length > 300) game.log.splice(0, game.log.length - 300);
+  appendLogLine(type, text);
+}
+
+function appendLogLine(type, text) {
+  const el = document.getElementById("log");
+  if (!el) return;
+  const p = document.createElement("p");
+  p.className = "log-" + type;
+  p.textContent = "[" + fmtTime(game.totalTime) + "] " + text;
+  el.appendChild(p);
+  el.scrollTop = el.scrollHeight;
+}
+
+function fmtTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return (h ? h + "h" : "") + (h || m ? m + "m" : "") + s + "s";
+}
+
+function makeSegs(total, filled) {
+  let h = "";
+  for (let i = 0; i < total; i++) {
+    h += '<div class="seg' + (i < filled ? " on" : "") + '"></div>';
+  }
+  return h;
+}
+
+function renderSeg(id, total, filled) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = makeSegs(total, filled);
+}
+
+function render() {
+  if (!game) return;
+  const g = game;
+
+  document.getElementById("heroName").textContent = g.name;
+  document.getElementById("heroMeta").textContent = "Niveau " + g.level + " " + g.race.name + " · " + g.class.name + " · stat primaire : " + STAT_LABELS[g.class.primary].toLowerCase();
+  document.getElementById("heroTitle").textContent = titleForLevel(g.level);
+
+  const needed = xpNeeded(g.level);
+
+  document.getElementById("actionLabel").textContent = "Action : " + (g.actionText || "en exploration...");
+  document.getElementById("actionTime").textContent = Math.min(g.actionTimer, g.actionDuration) + "s / " + g.actionDuration + "s";
+  renderSeg("actionBar", 10, Math.min(10, Math.floor(g.actionTimer / g.actionDuration * 10)));
+
+  document.getElementById("questShort").textContent = g.quest.text;
+  document.getElementById("questTime").textContent = Math.min(g.quest.time, g.quest.duration) + "s / " + g.quest.duration + "s";
+  renderSeg("questBar", 10, Math.floor(g.quest.time / g.quest.duration * 10));
+
+  document.getElementById("xpText").textContent = g.xp + " / " + needed + " XP";
+  renderSeg("xpBar", 10, Math.floor(g.xp / needed * 10));
+
+  document.getElementById("hpText").textContent = Math.max(0, Math.round(g.hp)) + " / " + g.maxHp;
+  renderSeg("hpBar", 10, Math.floor(Math.max(0, g.hp) / g.maxHp * 10));
+
+  document.getElementById("statLevel").textContent = g.level;
+  document.getElementById("statStr").textContent = g.stats.str;
+  document.getElementById("statCon").textContent = g.stats.con;
+  document.getElementById("statDex").textContent = g.stats.dex;
+  document.getElementById("statInt").textContent = g.stats.int;
+  document.getElementById("statWis").textContent = g.stats.wis;
+  document.getElementById("statCha").textContent = g.stats.cha;
+  document.getElementById("statDmg").textContent = weaponDamage();
+  document.getElementById("statArmor").textContent = armorRating();
+  document.getElementById("statKills").textContent = g.kills;
+  document.getElementById("statQuests").textContent = g.questsDone;
+  document.getElementById("statGold").textContent = formatGold(g.gold);
+  document.getElementById("statItems").textContent = g.itemsFound;
+  document.getElementById("statDeaths").textContent = g.deaths;
+  document.getElementById("statTime").textContent = fmtTime(g.totalTime);
+
+  let st;
+  if (g.dead) st = "Vous êtes mort... résurrection dans " + Math.max(0, g.deathTimer) + "s";
+  else st = "Quête : « " + g.quest.text + " » — il reste " + Math.max(0, g.quest.duration - g.quest.time) + "s";
+  document.getElementById("statusText").textContent = st;
+
+  renderQuest();
+  renderSpells();
+  renderInventory();
+  renderEquipment();
+  renderPlot();
+}
+
+function formatGold(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+
+function renderQuest() {
+  const box = document.getElementById("questBox");
+  const g = game;
+  box.innerHTML = "";
+  const q = document.createElement("div");
+  q.className = "quest-box";
+
+  let objective;
+  if (g.quest.type === "exterminate") {
+    objective = "Objectif : " + g.quest.count + " / " + g.quest.need + " " + monsterPlural(g.quest.target) + " éliminés";
+  } else if (g.quest.type === "deliver") {
+    objective = "Objectif : remettre l'objet à " + g.quest.target;
+  } else {
+    objective = "Objectif : trouver l'objet demandé";
+  }
+
+  q.innerHTML =
+    '<div class="quest-name">[' + QUEST_TYPE_LABELS[g.quest.type] + '] « ' + esc(g.quest.text) + ' »</div>' +
+    '<div class="quest-desc">Zone : ' + esc(zoneName(g.level)) + " — " + esc(objective) + "</div>" +
+    '<div class="quest-reward">Récompense : ~' + Math.round((60 + g.level * 28) * xpMultiplier()) + " XP, ~" + (30 + g.level * 12) + " or + bonus aléatoire</div>" +
+    '<div class="prog-label" style="margin-top:6px;"><span>Temps restant</span><span>' + Math.max(0, g.quest.duration - g.quest.time) + "s</span></div>" +
+    '<div class="segbar">' + makeSegs(10, Math.floor(g.quest.time / g.quest.duration * 10)) + '</div>';
+  box.appendChild(q);
+}
+
+function renderSpells() {
+  const box = document.getElementById("spells");
+  box.innerHTML = "";
+  if (!game.spells.length) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = "Aucun sort pour l'instant.";
+    box.appendChild(d);
+    return;
+  }
+  game.spells.forEach(function (s) {
+    const div = document.createElement("div");
+    div.className = "spell";
+    div.textContent = s.name + " (niv. " + s.lvl + ")";
+    box.appendChild(div);
+  });
+}
+
+function zoneName(lvl) {
+  if (lvl <= 2) return "Les Champs du Début";
+  if (lvl <= 4) return "La Forêt Sombre";
+  if (lvl <= 6) return "Les Cavernes Grondantes";
+  if (lvl <= 8) return "Le Marais Putride";
+  if (lvl <= 11) return "La Montagne des Crânes";
+  if (lvl <= 14) return "Les Terres Arides";
+  return "Le Repaire des Anciens";
+}
+
+function renderInventory() {
+  const box = document.getElementById("inventory");
+  box.innerHTML = "";
+  if (!game.inventory.length) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = "Aucun objet en réserve.";
+    box.appendChild(d);
+    return;
+  }
+  game.inventory.forEach(function (it) {
+    const div = document.createElement("div");
+    div.className = "item";
+    const sub = it.kind === "junk"
+      ? "Objet absurde"
+      : SLOT_LABELS[it.slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "");
+    div.innerHTML =
+      '<div class="iname">' + esc(it.name) + "</div>" +
+      '<div class="isub">' + sub + "</div>";
+    box.appendChild(div);
+  });
+}
+
+function renderEquipment() {
+  const box = document.getElementById("equipment");
+  box.innerHTML = "";
+  let any = false;
+  for (const slot in SLOT_LABELS) {
+    const it = game.equipped[slot];
+    const div = document.createElement("div");
+    div.className = "item equipped";
+    if (it) {
+      any = true;
+      div.innerHTML =
+        '<div class="iname">' + esc(it.name) + "</div>" +
+        '<div class="isub">' + SLOT_LABELS[slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "") + "</div>";
+    } else {
+      div.innerHTML = '<div class="isub">' + SLOT_LABELS[slot] + " : vide</div>";
+    }
+    box.appendChild(div);
+  }
+  if (!any) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = "Vous êtes en loques.";
+    box.appendChild(d);
+  }
+}
+
+function renderPlot() {
+  const box = document.getElementById("plotDev");
+  box.innerHTML = "";
+  if (!game.questLog || !game.questLog.length) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = "Aucune quête pour l'instant.";
+    box.appendChild(d);
+    return;
+  }
+  game.questLog.slice(-150).reverse().forEach(function (entry) {
+    const div = document.createElement("div");
+    div.className = "plot-entry";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !!entry.done;
+    cb.disabled = true;
+    const span = document.createElement("span");
+    span.textContent = entry.text;
+    div.appendChild(cb);
+    div.appendChild(span);
+    box.appendChild(div);
+  });
+}
+
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* ============================================================
+   SAUVEGARDE LOCALE (toutes les 30 s)
+   ============================================================ */
+
+function save() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(game));
+  } catch (e) { /* stockage indisponible */ }
+}
+
+function exportSave() {
+  if (!game) return;
+  try {
+    const blob = new Blob([JSON.stringify(game)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "questing-simulator-save.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert("Impossible d'exporter la sauvegarde.");
+  }
+}
+
+function importSave(file) {
+  const reader = new FileReader();
+  reader.onload = function () {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (parsed && parsed.version === VERSION && parsed.name && parsed.quest) {
+        game = parsed;
+        save();
+        document.getElementById("topTitle").textContent = "Questing Simulator";
+        document.getElementById("charCreation").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        rebuildLogFromSave();
+        render();
+        log("system", "Sauvegarde importée. Bon retour, " + game.name + " !");
+      } else {
+        alert("Sauvegarde invalide ou version incompatible.");
+      }
+    } catch (e) {
+      alert("Impossible de lire la sauvegarde.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.version === VERSION && parsed.name) {
+        game = parsed;
+        if (!Array.isArray(game.questLog)) {
+          game.questLog = game.quest ? [{ text: game.quest.text, done: false }] : [];
+        }
+        rebuildLogFromSave();
+        log("system", "Aventure chargée. Bon retour, " + game.name + " !");
+        document.getElementById("topTitle").textContent = "Questing Simulator";
+        document.getElementById("charCreation").style.display = "none";
+        document.getElementById("gameUI").style.display = "block";
+        return true;
+      }
+    }
+  } catch (e) { /* save corrompue : on recommence */ }
+  return false;
+}
+
+function rebuildLogFromSave() {
+  const el = document.getElementById("log");
+  el.innerHTML = "";
+  game.log.slice(-200).forEach(function (l) {
+    const p = document.createElement("p");
+    p.className = "log-" + l.type;
+    p.textContent = "[" + fmtTime(game.totalTime) + "] " + l.text;
+    el.appendChild(p);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+function showDeath() { document.getElementById("deathOverlay").style.display = "flex"; }
+function hideDeath() { document.getElementById("deathOverlay").style.display = "none"; }
+
+/* ============================================================
+   UTILITAIRES & DÉMARRAGE
+   ============================================================ */
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randBetween(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+
+function weightedPick(arr) {
+  const total = arr.reduce(function (s, e) { return s + e[1]; }, 0);
+  let r = Math.random() * total;
+  for (const e of arr) {
+    r -= e[1];
+    if (r <= 0) return e;
+  }
+  return arr[arr.length - 1];
+}
+
+function resetToCreation() {
+  rollAllStats();
+  creation.name = randomName();
+  creation.race = pick(RACES);
+  creation.cls = pick(CLASSES);
+  document.getElementById("nameInput").value = creation.name;
+  document.getElementById("nameWarn").textContent = "";
+  document.getElementById("topTitle").textContent = "Questing Simulator — Création de personnage";
+  document.getElementById("gameUI").style.display = "none";
+  document.getElementById("charCreation").style.display = "block";
+  renderCreation();
+}
+
+document.getElementById("btnNew").addEventListener("click", function () {
+  if (!confirm("Recommencer une toute nouvelle aventure ? Votre progression actuelle sera écrasée.")) return;
+  resetToCreation();
+});
+
+document.getElementById("btnSave").addEventListener("click", function () {
+  if (!game) return;
+  save();
+  log("system", "Partie sauvegardée manuellement.");
+});
+
+document.getElementById("btnExport").addEventListener("click", function () {
+  exportSave();
+  if (game) log("system", "Sauvegarde exportée dans un fichier.");
+});
+
+document.getElementById("btnImport").addEventListener("click", function () {
+  if (game && !confirm("Importer une sauvegarde écrasera votre partie actuelle. Continuer ?")) return;
+  document.getElementById("importFile").click();
+});
+
+document.getElementById("importFile").addEventListener("change", function (e) {
+  const f = e.target.files[0];
+  if (f) importSave(f);
+  e.target.value = "";
+});
+
+function updateClock() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const t = hh + ":" + mm;
+  document.getElementById("clockTop").textContent = t;
+  document.getElementById("clockBottom").textContent = t;
+}
+
+// Boucle principale : 1 tic / seconde
+setInterval(function () { tick(); render(); updateClock(); }, TICK_MS);
+
+// Sauvegarde automatique toutes les 30 secondes
+setInterval(function () { if (game) save(); }, SAVE_INTERVAL);
+
+// Sauvegarde à la fermeture de l'onglet
+window.addEventListener("beforeunload", function () { if (game) save(); });
+
+// Démarrage
+rollAllStats();
+creation.name = randomName();
+creation.race = pick(RACES);
+creation.cls = pick(CLASSES);
+document.getElementById("nameInput").value = creation.name;
+renderCreation();
+if (!load()) {
+  document.getElementById("charCreation").style.display = "block";
+}
+render();
+updateClock();
+</script>
+</body>
+</html>
