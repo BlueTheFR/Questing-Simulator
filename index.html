@@ -731,9 +731,6 @@ const EQUIP_BASES = [
   { slot: "amule",  base: "Amulette du dernier sandwich", dmg: [0,2], armor: [0,1] }
 ];
 
-const ADJ1 = ["Émoussé", "Corrodé", "Terne", "Poussiéreux", "Moite", "Luisant", "Éclatant", "Délavé", "Dentelé", "Sacré", "Maudit", "Chaud", "Aiguisé", "Rouillé", "Propre (rare)"];
-const ADJ2 = ["Fade", "Déchiré", "Plissé", "Rembourré", "Troué", "Réfléchissant", "Élastique", "Givré", "Piquant", "Bariolé", "Sournois", "Géant", "Mini", "Volant"];
-
 const EQUIP_MUTATIONS = [
   { name: "mutant",         mult: 1.3,  color: "#2e8b57" },
   { name: "augmenté",       mult: 1.45, color: "#ff8c00" },
@@ -744,6 +741,23 @@ const EQUIP_MUTATIONS = [
   { name: "béni",           mult: 1.65, color: "#daa520" },
   { name: "chaotique",      mult: 1.5,  color: "#ff00ff" },
   { name: "primordial",     mult: 1.9,  color: "#9400d3" }
+];
+
+const MUTATION_ADJ = [
+  { name: "Fade",           mult: 1.2,  color: "#808080" },
+  { name: "Déchiré",        mult: 1.15, color: "#a0522d" },
+  { name: "Plissé",         mult: 1.15, color: "#8b7d6b" },
+  { name: "Rembourré",      mult: 1.25, color: "#cd853f" },
+  { name: "Troué",          mult: 1.2,  color: "#6b6b6b" },
+  { name: "Réfléchissant",  mult: 1.3,  color: "#c0c0c0" },
+  { name: "Élastique",      mult: 1.2,  color: "#d2691e" },
+  { name: "Givré",          mult: 1.35, color: "#00bfff" },
+  { name: "Piquant",        mult: 1.3,  color: "#7fff00" },
+  { name: "Bariolé",        mult: 1.4,  color: "#ff69b4" },
+  { name: "Sournois",       mult: 1.35, color: "#4b0082" },
+  { name: "Géant",          mult: 1.5,  color: "#dc143c" },
+  { name: "Mini",           mult: 1.1,  color: "#90ee90" },
+  { name: "Volant",         mult: 1.45, color: "#87ceeb" }
 ];
 
 const JUNK = [
@@ -1348,30 +1362,44 @@ function makeShopItemForSlot(slot) {
   item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
   item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * (0.8 + Math.random() * 0.9)));
   applyMutation(item);
-  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base + (item.mutation ? " (" + item.mutation + ")" : "");
+  item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (item.mutation ? " " + item.mutation : "");
   return item;
 }
 
 function applyMutation(item) {
-  if (Math.random() >= 0.2) return;
-  const m = pick(EQUIP_MUTATIONS);
-  item.mutation = m.name;
-  item.dmg = Math.max(1, Math.round(item.dmg * m.mult));
-  item.armor = Math.max(1, Math.round(item.armor * m.mult));
+  if (Math.random() < 0.2) {
+    const m = pick(EQUIP_MUTATIONS);
+    item.mutation = m.name;
+    item.dmg = Math.max(1, Math.round(item.dmg * m.mult));
+    item.armor = Math.max(1, Math.round(item.armor * m.mult));
+  }
+  if (Math.random() < 0.25) {
+    const m = pick(MUTATION_ADJ);
+    item.mutation2 = m.name;
+    item.dmg = Math.max(1, Math.round(item.dmg * m.mult));
+    item.armor = Math.max(1, Math.round(item.armor * m.mult));
+  }
 }
 
 function mutationColor(mut) {
   for (const m of EQUIP_MUTATIONS) {
     if (m.name === mut) return m.color;
   }
+  for (const m of MUTATION_ADJ) {
+    if (m.name === mut) return m.color;
+  }
   return "#0000ff";
 }
 
 function itemNameHtml(item) {
-  const base = esc(item.name);
-  if (!item.mutation) return base;
-  const plain = esc(item.name.replace(" (" + item.mutation + ")", ""));
-  return plain + ' <span style="color:' + mutationColor(item.mutation) + ';font-weight:bold;">(' + esc(item.mutation) + ")</span>";
+  if (!item.mutation && !item.mutation2) return esc(item.name);
+  let plain = item.name;
+  if (item.mutation) plain = plain.replace(" " + item.mutation, "");
+  if (item.mutation2) plain = plain.replace(item.mutation2 + " ", "");
+  let html = esc(plain);
+  if (item.mutation2) html = '<span style="color:' + mutationColor(item.mutation2) + ';font-weight:bold;">' + esc(item.mutation2) + "</span> " + html;
+  if (item.mutation) html += ' <span style="color:' + mutationColor(item.mutation) + ';font-weight:bold;">' + esc(item.mutation) + "</span>";
+  return html;
 }
 
 function actFromHours(hours) {
@@ -1554,7 +1582,7 @@ function generateEquip(mLevel) {
   item.dmg += plus;
   item.armor += plus;
   applyMutation(item);
-  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " (" + item.mutation + ")" : "");
+  item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " " + item.mutation : "");
   game.gearPlus[t.base] = plus + 1;
   return item;
 }
