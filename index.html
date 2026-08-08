@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -178,12 +178,12 @@
 
 <!-- ================= BARRE DU HAUT (plein écran) ================= -->
 <header class="topbar">
-  <span id="topTitle">Questing Simulator — Création de personnage</span>
+  <span id="topTitle">Questing Simulator — Character creation</span>
   <span style="display:flex;gap:4px;flex-wrap:wrap;">
-    <button class="winbtn" id="btnNew">Nouvelle aventure</button>
-    <button class="winbtn" id="btnSave">Sauvegarder</button>
-    <button class="winbtn" id="btnExport">Exporter</button>
-    <button class="winbtn" id="btnImport">Importer</button>
+    <button class="winbtn" id="btnNew">New adventure</button>
+    <button class="winbtn" id="btnSave">Save</button>
+    <button class="winbtn" id="btnExport">Export</button>
+    <button class="winbtn" id="btnImport">Import</button>
   </span>
   <span class="clock" id="clockTop">--:--</span>
   <input type="file" id="importFile" accept=".json,application/json" style="display:none">
@@ -192,45 +192,45 @@
 <!-- ================= ÉCRAN DE CRÉATION ================= -->
 <div id="charCreation">
   <div class="content-wrap">
-    <div class="page-title">Création de personnage</div>
+    <div class="page-title">Character creation</div>
     <div class="gbox gbox-inner">
       <div class="create-grid">
         <div>
-          <label for="nameInput">Nom du héros :</label>
+          <label for="nameInput" id="lblHeroName">Hero name:</label>
           <div class="name-row">
             <input type="text" id="nameInput" maxlength="24">
-            <button class="winbtn" id="randNameBtn" title="Nom aléatoire">Aléatoire</button>
+            <button class="winbtn" id="randNameBtn" title="Random name">Random</button>
           </div>
           <div class="warning" id="nameWarn"></div>
         </div>
         <div>
-          <label for="raceSelect">Race :</label>
+          <label for="raceSelect" id="lblRace">Race:</label>
           <select id="raceSelect"></select>
           <div class="info" id="raceInfo"></div>
         </div>
         <div>
-          <label for="classSelect">Classe :</label>
+          <label for="classSelect" id="lblClass">Class:</label>
           <select id="classSelect"></select>
           <div class="info" id="classInfo"></div>
         </div>
         <div>
-          <label>Stats de base (3d6 chacune)</label>
+          <label id="lblBaseStats">Base stats (3d6 each)</label>
           <div id="statsList"></div>
           <div class="roll-all-line">
-            <span>Total : <span id="statTotal" class="tot-val tot-normal">0</span>
-              <span class="tot-hint">(moyenne : 63)</span></span>
-            <button class="winbtn" id="rollAllBtn">3d6&nbsp;Relancer tout</button>
+            <span>Total: <span id="statTotal" class="tot-val tot-normal">0</span>
+              <span class="tot-hint" id="totHint">(average: 63)</span></span>
+            <button class="winbtn" id="rollAllBtn">3d6&nbsp;Reroll all</button>
           </div>
-          <div class="tot-hint" style="margin-top:5px;">
-            3d6 par stat + bonus de race et de classe · Aucun plafond : vos stats montent sans limite.
+          <div class="tot-hint" id="statHint" style="margin-top:5px;">
+            3d6 per stat + race and class bonuses · No cap: your stats rise without limit.
           </div>
         </div>
       </div>
       <div style="text-align:center;margin-top:14px;">
-        <button class="winbtn big" id="startBtn">Commencer l'aventure</button>
+        <button class="winbtn big" id="startBtn">Begin the adventure</button>
       </div>
       <div id="loadingBox" style="display:none">
-        <div class="load-label" id="loadLabel">Génération de votre héros...</div>
+        <div class="load-label" id="loadLabel">Generating your hero...</div>
         <div class="segbar big" id="loadBar"></div>
       </div>
     </div>
@@ -247,70 +247,70 @@
       </div>
       <div class="hero-meta" id="heroMeta"></div>
 
-      <div class="prog-label"><span id="actionLabel">Action : ...</span><span class="dim" id="actionTime"></span></div>
+      <div class="prog-label"><span id="actionLabel">Action: ...</span><span class="dim" id="actionTime"></span></div>
       <div class="segbar big" id="actionBar"></div>
 
-      <div class="prog-label"><span>Quête : <span id="questShort">...</span></span><span class="dim" id="questTime"></span></div>
+      <div class="prog-label"><span id="questPrefix">Quest: </span><span id="questShort">...</span><span class="dim" id="questTime"></span></div>
       <div class="segbar big" id="questBar"></div>
 
-      <div class="prog-label"><span>Expérience</span><span class="dim" id="xpText">0 / 0</span></div>
+      <div class="prog-label"><span id="xpLabel">Experience</span><span class="dim" id="xpText">0 / 0</span></div>
       <div class="segbar big" id="xpBar"></div>
 
-      <div class="prog-label"><span>Zone</span><span class="dim" id="zoneText">...</span></div>
+      <div class="prog-label"><span id="zoneLabel">Zone</span><span class="dim" id="zoneText">...</span></div>
     </div>
 
     <div class="grid">
       <div>
         <div class="gbox gbox-inner">
-          <div class="gtitle">Héros</div>
-          <div class="prog-label" style="margin-top:0;margin-bottom:4px;"><span>Vie</span><span id="hpText">0 / 0</span></div>
-          <div class="prog-label" style="margin-bottom:4px;"><span>Mana</span><span id="mpText">0 / 0</span></div>
+          <div class="gtitle" id="gHeroTitle">Hero</div>
+          <div class="prog-label" style="margin-top:0;margin-bottom:4px;"><span id="hpLabel">Health</span><span id="hpText">0 / 0</span></div>
+          <div class="prog-label" style="margin-bottom:4px;"><span id="mpLabel">Mana</span><span id="mpText">0 / 0</span></div>
           <div style="margin-top:8px;">
-            <div class="stat-row"><span class="label">Niveau</span><span class="val" id="statLevel">1</span></div>
-            <div class="stat-row"><span class="label">Force (FOR)</span><span class="val" id="statStr">0</span></div>
-            <div class="stat-row"><span class="label">Constitution (CON)</span><span class="val" id="statCon">0</span></div>
-            <div class="stat-row"><span class="label">Dextérité (DEX)</span><span class="val" id="statDex">0</span></div>
-            <div class="stat-row"><span class="label">Intelligence (INT)</span><span class="val" id="statInt">0</span></div>
-            <div class="stat-row"><span class="label">Sagesse (SAG)</span><span class="val" id="statWis">0</span></div>
-            <div class="stat-row"><span class="label">Charisme (CHA)</span><span class="val" id="statCha">0</span></div>
-            <div class="stat-row"><span class="label">Dégâts</span><span class="val" id="statDmg">0</span></div>
-            <div class="stat-row"><span class="label">Armure</span><span class="val" id="statArmor">0</span></div>
-            <div class="stat-row"><span class="label">Kills</span><span class="val" id="statKills">0</span></div>
-            <div class="stat-row"><span class="label">Quêtes finies</span><span class="val" id="statQuests">0</span></div>
-            <div class="stat-row"><span class="label">Or</span><span class="val gold" id="statGold">0</span></div>
-            <div class="stat-row"><span class="label">Objets obtenus</span><span class="val" id="statItems">0</span></div>
-            <div class="stat-row"><span class="label">Trésors</span><span class="val gold" id="statTreasures">0</span></div>
+            <div class="stat-row"><span class="label" id="sLevel">Level</span><span class="val" id="statLevel">1</span></div>
+            <div class="stat-row"><span class="label" id="sStr">Strength (STR)</span><span class="val" id="statStr">0</span></div>
+            <div class="stat-row"><span class="label" id="sCon">Constitution (CON)</span><span class="val" id="statCon">0</span></div>
+            <div class="stat-row"><span class="label" id="sDex">Dexterity (DEX)</span><span class="val" id="statDex">0</span></div>
+            <div class="stat-row"><span class="label" id="sInt">Intelligence (INT)</span><span class="val" id="statInt">0</span></div>
+            <div class="stat-row"><span class="label" id="sWis">Wisdom (WIS)</span><span class="val" id="statWis">0</span></div>
+            <div class="stat-row"><span class="label" id="sCha">Charisma (CHA)</span><span class="val" id="statCha">0</span></div>
+            <div class="stat-row"><span class="label" id="sDmg">Damage</span><span class="val" id="statDmg">0</span></div>
+            <div class="stat-row"><span class="label" id="sArmor">Armor</span><span class="val" id="statArmor">0</span></div>
+            <div class="stat-row"><span class="label" id="sKills">Kills</span><span class="val" id="statKills">0</span></div>
+            <div class="stat-row"><span class="label" id="sQuests">Quests done</span><span class="val" id="statQuests">0</span></div>
+            <div class="stat-row"><span class="label" id="sGold">Gold</span><span class="val gold" id="statGold">0</span></div>
+            <div class="stat-row"><span class="label" id="sItems">Items found</span><span class="val" id="statItems">0</span></div>
+            <div class="stat-row"><span class="label" id="sTreasures">Treasures</span><span class="val gold" id="statTreasures">0</span></div>
           </div>
-          <div class="stats-line">Temps de partie : <span id="statTime">0s</span></div>
+          <div class="stats-line"><span id="sTime">Play time: </span><span id="statTime">0s</span></div>
         </div>
         <div class="gbox gbox-inner grow">
-          <div class="gtitle">Sorts connus</div>
+          <div class="gtitle" id="gSpells">Known spells</div>
           <div id="spells"></div>
         </div>
       </div>
 
       <div>
         <div class="gbox gbox-inner">
-          <div class="gtitle">Quête actuelle</div>
+          <div class="gtitle" id="gQuest">Current quest</div>
           <div id="questBox"></div>
         </div>
         <div class="gbox gbox-inner grow fillbox" style="margin-bottom:0;">
-          <div class="gtitle">Journal d'aventure</div>
+          <div class="gtitle" id="gLog">Adventure log</div>
           <div id="log"></div>
         </div>
       </div>
 
       <div>
         <div class="gbox gbox-inner">
-          <div class="gtitle">Développement de l'intrigue</div>
+          <div class="gtitle" id="gPlot">Plot development</div>
           <div id="plotDev"></div>
         </div>
         <div class="gbox gbox-inner">
-          <div class="gtitle">Équipement</div>
+          <div class="gtitle" id="gEquip">Equipment</div>
           <div id="equipment"></div>
         </div>
         <div class="gbox gbox-inner grow fillbox" style="margin-bottom:0;">
-          <div class="gtitle">Inventaire</div>
+          <div class="gtitle" id="gInv">Inventory</div>
           <div id="inventory"></div>
         </div>
       </div>
@@ -320,12 +320,502 @@
 
 <!-- ================= BARRE DE STATUT BAS ================= -->
 <footer class="statusbar">
-  <span id="statusText">Prêt</span>
-  <span id="clockBottom">--:--</span>
+  <span id="statusText">Ready</span>
+  <span style="display:flex;align-items:center;gap:8px;">
+    <button class="winbtn" id="langBtn" title="Switch language / Changer de langue">EN</button>
+    <span id="clockBottom">--:--</span>
+  </span>
 </footer>
 
 <script>
 "use strict";
+
+/* ============================================================
+   LOCALISATION FR / EN
+   ============================================================ */
+
+let lang = "en";
+
+const STRINGS = {
+  fr: {
+    topTitle: "Questing Simulator — Création de personnage",
+    btnNew: "Nouvelle aventure", btnSave: "Sauvegarder", btnExport: "Exporter", btnImport: "Importer",
+    randName: "Aléatoire", randNameTitle: "Nom aléatoire",
+    pageTitle: "Création de personnage",
+    lblHeroName: "Nom du héros :", lblRace: "Race :", lblClass: "Classe :",
+    lblBaseStats: "Stats de base (3d6 chacune)",
+    totalHint: "(moyenne : 63)",
+    rollAllBtn: "3d6 Relancer tout",
+    statHint: "3d6 par stat + bonus de race et de classe · Aucun plafond : vos stats montent sans limite.",
+    startBtn: "Commencer l'aventure",
+    loadLabel: "Génération de votre héros...",
+    statusReady: "Prêt",
+    questPrefix: "Quête : ", xpLabel: "Expérience", zoneLabel: "Zone",
+    gHeroTitle: "Héros", hpLabel: "Vie", mpLabel: "Mana",
+    sLevel: "Niveau", sStr: "Force (FOR)", sCon: "Constitution (CON)", sDex: "Dextérité (DEX)",
+    sInt: "Intelligence (INT)", sWis: "Sagesse (SAG)", sCha: "Charisme (CHA)",
+    sDmg: "Dégâts", sArmor: "Armure", sKills: "Kills", sQuests: "Quêtes finies",
+    sGold: "Or", sItems: "Objets obtenus", sTreasures: "Trésors",
+    sTime: "Temps de partie : ",
+    gSpells: "Sorts connus", gQuest: "Quête actuelle", gLog: "Journal d'aventure",
+    gPlot: "Développement de l'intrigue", gEquip: "Équipement", gInv: "Inventaire",
+    exploring: "en exploration...", toShop: "Se rend à la boutique...",
+    shopDesc: "Le héros va vendre ses trouvailles et acheter de meilleures pièces.",
+    zone: "Zone : {z}", reward: "Récompense : ~{x} XP, ~{g} or + bonus aléatoire",
+    noSpells: "Aucun sort pour l'instant.", foreign: "étranger",
+    noInv: "Aucun objet en réserve.", absurd: "Objet absurde", unique: "Objet unique",
+    empty: "vide", rags: "Vous êtes en loques.",
+    actDone: "Acte {a} — terminé ({h} h)", actCur: "Acte {a} — en cours",
+    heroMeta: "Niveau {l} {r} · {c} · stat primaire : {s}",
+    dmgShort: "{n} dégât(s)", armorShort: "{n} armure", hpShort: "{n} PV", mpShort: "{n} PM",
+    startMsg: "Votre aventure commence, {n} !",
+    raceClass: "Race : {r} — Classe : {c} (stat primaire : {s}).",
+    questAcc: "Quête acceptée : « {t} ».",
+    newQuest: "Nouvelle quête : « {t} ».",
+    questDone: "Quête terminée : « {t} » (+{x} XP, +{g} or).",
+    bossEquip: "Butin de boss : {i} — équipé immédiatement !",
+    bossInv: "Butin de boss : {i} (rangé dans l'inventaire).",
+    bossDown: "Le boss est vaincu, ses reliques jonchent le sol !",
+    rewUnique: "Récompense : objet unique — {i} !",
+    rewEquip: "Récompense : {i} — équipé immédiatement !",
+    rewEquipInv: "Récompense : {i} (rangé dans l'inventaire).",
+    rewStat: "Récompense de quête : +1 {s} !",
+    rewForeign: "Récompense : vous apprenez un sort d'une autre école ({sc}) : « {n} » !",
+    rewNew: "Récompense : vous apprenez un nouveau sort « {n} » !",
+    rewUp: "Récompense : « {n} » passe au niveau {l} !",
+    rewGold: "Récompense : le grimoire est vide, vous trouvez {g} or à la place.",
+    learn: "Vous apprenez un nouveau sort : « {n} » !",
+    mastery: "Votre maîtrise s'affine : « {n} » passe au niveau {l} !",
+    actEnded: "Acte {a} terminé — joué {h} h !",
+    killLine: "{hero} {v} {art} {m} (+{x} XP, +{g} or).",
+    shopLine: "Boutique : {s} objet(s) vendu(s), {b} pièce(s) achetée(s) (charisme = meilleures pièces).",
+    buysEq: "{ref} achète {i} — équipé immédiatement !",
+    buysInv: "{ref} achète {i} (rangé dans l'inventaire).",
+    findsEq: "{ref} trouve {i} — équipé immédiatement !",
+    findsInv: "{ref} trouve {i} (rangé dans l'inventaire).",
+    mimicWin: "{ref} triomphe du combat (+{x} XP, +{g} or).",
+    forage: "{ref} revend ses cueillettes (+{g} or).",
+    trapLoss: "Piège ! {ref} perd {g} or en se dépêtrant.",
+    trapDisarm: "{ref} désamorce habilement un piège.",
+    digFound: "{ref} déniche un petit trésor dans les décombres (+{g} or).",
+    digNothing: "{ref} ne trouve que des gravats sans intérêt.",
+    levelUp: "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau {l} (+1 à tous les attributs).",
+    newTitle: "Nouveau titre : {t}",
+    bossTitle: "Tueur de boss (niv. {n})",
+    bossTitleF: "Tueuse de boss (niv. {n})",
+    slayerTitle: "Tueur de {m} (niv. {n})",
+    slayerTitleF: "Tueuse de {m} (niv. {n})",
+    legendTitle: "légende immortelle de niveau {l}",
+    titleLevel: "{t} niveau {l}",
+    dropEq: "Butin : {i} — équipé immédiatement !",
+    dropEqInv: "Butin : {i} (rangé dans l'inventaire).",
+    junkDrop: "Objet absurde : {i} (vous le gardez quand même).",
+    soldAll: "{ref} vend tout son inventaire ({n} objet(s)) pour {g} or.",
+    exportErr: "Impossible d'exporter la sauvegarde.",
+    importOk: "Sauvegarde importée. Bon retour, {n} !",
+    importBad: "Sauvegarde invalide ou version incompatible.",
+    importErr: "Impossible de lire la sauvegarde.",
+    loadOk: "Aventure chargée. Bon retour, {n} !",
+    confirmNew: "Recommencer une toute nouvelle aventure ? Votre progression actuelle sera écrasée.",
+    confirmImport: "Importer une sauvegarde écrasera votre partie actuelle. Continuer ?",
+    savedManual: "Partie sauvegardée manuellement.",
+    exported: "Sauvegarde exportée dans un fichier.",
+    warnName: "Donnez un nom à votre héros !", warnRace: "Choisissez une race !", warnClass: "Choisissez une classe !",
+    bonus: "Bonus : ", noBonus: "Aucun bonus",
+    sc_fighter: "Sorts de Guerre", sc_holy: "Sorts de Lumière", sc_mage: "Sorts d'Arcane",
+    sc_nature: "Sorts de Nature", sc_trickster: "Sorts de Tromperie",
+    actionLine: "Action : {x}"
+  },
+  en: {
+    topTitle: "Questing Simulator — Character creation",
+    btnNew: "New adventure", btnSave: "Save", btnExport: "Export", btnImport: "Import",
+    randName: "Random", randNameTitle: "Random name",
+    pageTitle: "Character creation",
+    lblHeroName: "Hero name:", lblRace: "Race:", lblClass: "Class:",
+    lblBaseStats: "Base stats (3d6 each)",
+    totalHint: "(average: 63)",
+    rollAllBtn: "3d6 Reroll all",
+    statHint: "3d6 per stat + race and class bonuses · No cap: your stats rise without limit.",
+    startBtn: "Begin the adventure",
+    loadLabel: "Generating your hero...",
+    statusReady: "Ready",
+    questPrefix: "Quest: ", xpLabel: "Experience", zoneLabel: "Zone",
+    gHeroTitle: "Hero", hpLabel: "Health", mpLabel: "Mana",
+    sLevel: "Level", sStr: "Strength (STR)", sCon: "Constitution (CON)", sDex: "Dexterity (DEX)",
+    sInt: "Intelligence (INT)", sWis: "Wisdom (WIS)", sCha: "Charisma (CHA)",
+    sDmg: "Damage", sArmor: "Armor", sKills: "Kills", sQuests: "Quests done",
+    sGold: "Gold", sItems: "Items found", sTreasures: "Treasures",
+    sTime: "Play time: ",
+    gSpells: "Known spells", gQuest: "Current quest", gLog: "Adventure log",
+    gPlot: "Plot development", gEquip: "Equipment", gInv: "Inventory",
+    exploring: "exploring...", toShop: "Heading to the shop...",
+    shopDesc: "The hero is going to sell the finds and buy better gear.",
+    zone: "Zone: {z}", reward: "Reward: ~{x} XP, ~{g} gold + random bonus",
+    noSpells: "No spells yet.", foreign: "foreign",
+    noInv: "No items in reserve.", absurd: "Absurd item", unique: "Unique item",
+    empty: "empty", rags: "You're in rags.",
+    actDone: "Act {a} — completed ({h} h)", actCur: "Act {a} — in progress",
+    heroMeta: "Level {l} {r} · {c} · primary stat: {s}",
+    dmgShort: "{n} dmg", armorShort: "{n} armor", hpShort: "{n} HP", mpShort: "{n} MP",
+    startMsg: "Your adventure begins, {n}!",
+    raceClass: "Race: {r} — Class: {c} (based on {s}).",
+    questAcc: "Quest accepted: \"{t}\".",
+    newQuest: "New quest: \"{t}\".",
+    questDone: "Quest completed: \"{t}\" (+{x} XP, +{g} gold).",
+    bossEquip: "Boss loot: {i} — equipped immediately!",
+    bossInv: "Boss loot: {i} (stored in inventory).",
+    bossDown: "The boss is defeated, its relics litter the ground!",
+    rewUnique: "Reward: unique item — {i}!",
+    rewEquip: "Reward: {i} — equipped immediately!",
+    rewEquipInv: "Reward: {i} (stored in inventory).",
+    rewStat: "Quest reward: +1 {s}!",
+    rewForeign: "Reward: you learn a spell from another school ({sc}): \"{n}\"!",
+    rewNew: "Reward: you learn a new spell \"{n}\"!",
+    rewUp: "Reward: \"{n}\" reaches level {l}!",
+    rewGold: "Reward: the spellbook is empty, you find {g} gold instead.",
+    learn: "You learn a new spell: \"{n}\"!",
+    mastery: "Your mastery sharpens: \"{n}\" reaches level {l}!",
+    actEnded: "Act {a} completed — played {h} h!",
+    killLine: "{hero} {v} {art} {m} (+{x} XP, +{g} gold).",
+    shopLine: "Shop: {s} item(s) sold, {b} piece(s) bought (charisma = better gear).",
+    buysEq: "{ref} buys {i} — equipped immediately!",
+    buysInv: "{ref} buys {i} (stored in inventory).",
+    findsEq: "{ref} finds {i} — equipped immediately!",
+    findsInv: "{ref} finds {i} (stored in inventory).",
+    mimicWin: "{ref} wins the fight (+{x} XP, +{g} gold).",
+    forage: "{ref} sells the foraged berries (+{g} gold).",
+    trapLoss: "Trap! {ref} loses {g} gold getting out of it.",
+    trapDisarm: "{ref} deftly disarms a trap.",
+    digFound: "{ref} finds a little treasure in the rubble (+{g} gold).",
+    digNothing: "{ref} only finds uninteresting rubble.",
+    levelUp: "LEVEL UP! You are now level {l} (+1 to all attributes).",
+    newTitle: "New title: {t}",
+    bossTitle: "Boss Slayer (lvl. {n})",
+    slayerTitle: "Slayer of {m} (lvl. {n})",
+    legendTitle: "immortal legend of level {l}",
+    titleLevel: "{t} level {l}",
+    dropEq: "Loot: {i} — equipped immediately!",
+    dropEqInv: "Loot: {i} (stored in inventory).",
+    junkDrop: "Absurd item: {i} (you keep it anyway).",
+    soldAll: "{ref} sells the whole inventory ({n} item(s)) for {g} gold.",
+    exportErr: "Unable to export the save.",
+    importOk: "Save imported. Welcome back, {n}!",
+    importBad: "Invalid save or incompatible version.",
+    importErr: "Unable to read the save.",
+    loadOk: "Game loaded. Welcome back, {n}!",
+    confirmNew: "Start a brand new adventure? Your current progress will be overwritten.",
+    confirmImport: "Importing a save will overwrite your current game. Continue?",
+    savedManual: "Game saved manually.",
+    exported: "Save exported to a file.",
+    warnName: "Give your hero a name!", warnRace: "Choose a race!", warnClass: "Choose a class!",
+    bonus: "Bonus: ", noBonus: "No bonus",
+    sc_fighter: "War spells", sc_holy: "Light spells", sc_mage: "Arcane spells",
+    sc_nature: "Nature spells", sc_trickster: "Trickery spells",
+    actionLine: "Action: {x}"
+  }
+};
+
+function T(key) {
+  const s = STRINGS[lang];
+  if (s && s[key] != null) return s[key];
+  return STRINGS.fr[key] != null ? STRINGS.fr[key] : key;
+}
+
+function fmt(s, v) {
+  return s.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? v[k] : m; });
+}
+
+function heroRef() {
+  const f = game && game.race && game.race.gender === "f";
+  if (lang === "en") return f ? "The heroine" : "The hero";
+  return f ? "La héroïne" : "Le héros";
+}
+
+function heroIsFemale() { return !!(game && game.race && game.race.gender === "f"); }
+
+function tr(s) { return lang === "en" ? (TR_EN[s] || s) : s; }
+
+const STAT_LABELS_EN = { str: "Strength", con: "Constitution", dex: "Dexterity", int: "Intelligence", wis: "Wisdom", cha: "Charisma" };
+function statLabel(k) { return lang === "en" ? STAT_LABELS_EN[k] : STAT_LABELS[k]; }
+
+const SCHOOL_EN = { fighter: "War", holy: "Light", mage: "Arcane", nature: "Nature", trickster: "Trickery" };
+function schoolLabel(a) { return lang === "en" ? SCHOOL_EN[a] : (SPELL_SCHOOL_LABELS[a] || a); }
+
+function articleEn(name) { return /^[AEIOU]/i.test(name) ? "an" : "a"; }
+
+const MONSTER_PLURAL_EN = { "Wolf": "Wolves", "Field Mouse": "Field Mice", "Lizardman": "Lizardmen", "Harpy": "Harpies", "Mummy": "Mummies", "Tamed Moose": "Tamed Moose" };
+function monsterPluralEn(name) {
+  const n = TR_EN[name] || name;
+  if (MONSTER_PLURAL_EN[n]) return MONSTER_PLURAL_EN[n];
+  if (/(s|x|ch|sh)$/i.test(n)) return n + "es";
+  return n + "s";
+}
+
+function setLanguage(l) {
+  const next = l === "fr" ? "fr" : "en";
+  if (lang === next) return;
+  lang = next;
+  document.documentElement.lang = lang;
+  const btn = document.getElementById("langBtn");
+  if (btn) btn.textContent = lang === "en" ? "EN" : "FR";
+  applyStaticText();
+  if (game) {
+    game.lang = lang;
+    if (game.quest) game.quest.text = questText(game.quest);
+    save();
+    render();
+  } else {
+    renderCreation();
+  }
+}
+
+function applyStaticText() {
+  const set = function (id, key) { const el = document.getElementById(id); if (el) el.textContent = T(key); };
+  document.getElementById("topTitle").textContent = game ? "Questing Simulator" : T("topTitle");
+  set("btnNew", "btnNew"); set("btnSave", "btnSave"); set("btnExport", "btnExport"); set("btnImport", "btnImport");
+  set("randNameBtn", "randName"); set("lblHeroName", "lblHeroName"); set("lblRace", "lblRace");
+  set("lblClass", "lblClass"); set("lblBaseStats", "lblBaseStats"); set("totHint", "totalHint");
+  set("rollAllBtn", "rollAllBtn"); set("statHint", "statHint"); set("startBtn", "startBtn");
+  set("statusText", "statusReady"); set("questPrefix", "questPrefix"); set("xpLabel", "xpLabel");
+  set("zoneLabel", "zoneLabel"); set("loadLabel", "loadLabel"); set("gHeroTitle", "gHeroTitle"); set("hpLabel", "hpLabel");
+  set("mpLabel", "mpLabel"); set("sLevel", "sLevel"); set("sStr", "sStr"); set("sCon", "sCon");
+  set("sDex", "sDex"); set("sInt", "sInt"); set("sWis", "sWis"); set("sCha", "sCha");
+  set("sDmg", "sDmg"); set("sArmor", "sArmor"); set("sKills", "sKills"); set("sQuests", "sQuests");
+  set("sGold", "sGold"); set("sItems", "sItems"); set("sTreasures", "sTreasures"); set("sTime", "sTime");
+  set("gSpells", "gSpells"); set("gQuest", "gQuest"); set("gLog", "gLog"); set("gPlot", "gPlot");
+  set("gEquip", "gEquip"); set("gInv", "gInv");
+  const pt = document.querySelector(".page-title");
+  if (pt) pt.textContent = T("pageTitle");
+  const rn = document.getElementById("randNameBtn");
+  if (rn) rn.title = T("randNameTitle");
+  const lb = document.getElementById("langBtn");
+  if (lb) lb.textContent = lang === "en" ? "EN" : "FR";
+}
+
+/* ============================================================
+   DICTIONNAIRE DE CONTENU : FRANÇAIS -> ANGLAIS
+   ============================================================ */
+
+const TR_EN = {
+  "Bâton": "Staff", "Lame": "Blade", "Hache en plastique": "Plastic Axe", "Épée en bois": "Wooden Sword",
+  "Couteau à beurre": "Butter Knife", "Marteau à fromage": "Cheese Hammer", "Pic à glace": "Ice Pick",
+  "Fourchette à rôti": "Roasting Fork", "Cuillère en bois géante": "Giant Wooden Spoon",
+  "Corde à sauter ennemie": "Enemy Jump Rope", "Poêlon du barde": "Bard's Pan",
+  "Crosse de croquet maudite": "Cursed Croquet Mallet", "Parapluie à épée": "Sword Umbrella",
+  "Baguette de sourcier": "Dowsing Rod", "Hallebarde de ménage": "Household Halberd",
+  "Casque": "Helmet", "Bonnet de nuit": "Nightcap", "Casque à pointe": "Spiked Helmet",
+  "Casque de vélo héroïque": "Heroic Bike Helmet", "Chapeau de paille de garde": "Guard's Straw Hat",
+  "Tiare de la laitière": "Milkmaid's Tiara", "Casque à cornichons": "Pickle Helmet",
+  "Flanelle": "Flannel", "Tunique": "Tunic", "Bandeau de maman": "Mom's Sweatband",
+  "Chemise de force (confortable)": "Straightjacket (comfortable)", "Tablier du forgeron": "Blacksmith's Apron",
+  "Gilet de laine à rayures": "Striped Wool Vest", "Armure en carton": "Cardboard Armor",
+  "Collant": "Tights", "Pantalon": "Pants", "Chausses dépareillées": "Mismatched Leggings",
+  "Jupe écossaise du guerrier": "Warrior's Kilt", "Pantalon cargo de l'aventurier": "Adventurer's Cargo Pants",
+  "Caleçon de l'invincible": "Underpants of the Invincible",
+  "Chausson": "Slipper", "Sandale": "Sandal", "Bottine gauche": "Left Boot", "Sabot de ferme": "Farm Clog",
+  "Chaussure de bowling": "Bowling Shoe", "Pantoufle chauffante": "Heated Slipper",
+  "Bottine droite (enfin !)": "Right Boot (finally!)",
+  "Mitaine": "Mitten", "Gant de vaisselle": "Dishwashing Glove", "Moufle du bourreau": "Executioner's Mitten",
+  "Gant de jardinage en plastique": "Plastic Gardening Glove", "Mittaine de lancer de hache": "Axe-Throwing Mitten",
+  "Anneau": "Ring", "Élastique": "Rubber Band", "Anneau d'élastique royal": "Royal Rubber Band Ring",
+  "Anneau de serviette": "Napkin Ring", "Bague à la saucisse": "Sausage Ring",
+  "Amulette": "Amulet", "Bretelle": "Suspenders", "Médaille du troisième": "Third-Place Medal",
+  "Collier de pâtes": "Pasta Necklace", "Pendule du jardinier": "Gardener's Pendulum",
+  "Branche d'arbre": "Tree Branch", "Ceinture cloutée": "Studded Belt", "Couteau à huîtres": "Oyster Knife",
+  "Manche de pioche": "Pickaxe Handle", "Tuyau en plomb": "Lead Pipe", "Fouet à poney": "Pony Whip",
+  "Fourchette géante": "Giant Fork", "Bâton de pêche au gros": "Big-Game Fishing Rod",
+  "Louche du chef (avec couvercle)": "Chef's Ladle (with lid)",
+  "Lance à lancer (jamais revue)": "Throwaway Spear (never seen again)",
+  "Épée-broche de barbecue": "BBQ Spit-Sword", "Hache de pompier (kermesse)": "Fireman's Axe (fair prize)",
+  "Parapluie-canne de détective": "Detective Umbrella-Cane",
+  "Guitare électrique (armes à 6 cordes)": "Electric Guitar (6-string weapon)",
+  "Clavier de PC blindé": "Armored PC Keyboard",
+  "Cagoule de laine (avare)": "Wool Balaclava (cheapskate)", "Casque de chantier rouge": "Red Hard Hat",
+  "Couronne de laurier (du poulailler)": "Laurel Crown (of the henhouse)",
+  "Casque moto du laitier": "Milkman's Motorcycle Helmet", "Chapeau de pêcheur à crevettes": "Shrimp Fisherman's Hat",
+  "Bonnet du grand-père (sûr)": "Grandpa's Cap (trusty)", "Bandeau ninja (à la mode)": "Ninja Headband (trendy)",
+  "Chapeau de sorcier en papier": "Paper Wizard Hat",
+  "Blouson de cuir (grinçant)": "Leather Jacket (squeaky)", "Veste matelassée": "Quilted Jacket",
+  "Pull de Noël à renne": "Rudolph Christmas Sweater", "Armure de plate de poupée": "Doll Plate Armor",
+  "Gilet pare-balles (bébé)": "Bulletproof Vest (baby)", "Tablier de boucher": "Butcher's Apron",
+  "Cotte de maille (en porte-clés)": "Chainmail (keychain edition)", "Doublure du dragon (vraie ?)": "Dragon Lining (real?)",
+  "Pantalon de survêt de compète": "Track Pants (competition)", "Bas de pyjama étoilé": "Star-Patterned Pajama Pants",
+  "Culotte de chasseur (à carreaux)": "Hunter's Plaid Pants", "Jean délavé de bûcheron": "Lumberjack's Faded Jeans",
+  "Jupe-pantalon de l'aventurier": "Adventurer's Culottes", "Cargos à poches secrètes": "Secret-Pocket Cargos",
+  "Jambières en botte de foin": "Haystack Greaves",
+  "Crocs de jardin (clog)": "Garden Clogs", "Baskets magiques (usées)": "Magic Sneakers (worn)",
+  "Bottes en caoutchouc de pêche": "Fishing Rubber Boots", "Chaussons de danse": "Dance Slippers",
+  "Sandales de moine (rapiécées)": "Monk's Sandals (patched)", "Godillots du voyageur": "Traveler's Boots",
+  "Chaussures à ressorts": "Spring Shoes", "Socquettes renforcées": "Reinforced Socks",
+  "Gants de boxe (pour câlins)": "Boxing Gloves (for hugs)", "Mitaines du bûcheron": "Lumberjack's Mittens",
+  "Gants du plombier": "Plumber's Gloves", "Moufles de laveur de vitres": "Window Washer's Mittens",
+  "Gants à griffes de chat": "Cat-Claw Gloves", "Gants de gardien (rayés)": "Goalkeeper's Gloves (striped)",
+  "Anneau de la tasse à café": "Coffee Cup Ring", "Bague de fiançailles (à un autre)": "Engagement Ring (for someone else)",
+  "Anneau en bonbon": "Candy Ring", "Bague du cracker de Noël": "Christmas Cracker Ring",
+  "Anneau de la clé des champs": "Escape Key Ring",
+  "Pendentif de compas cassé": "Broken Compass Pendant", "Amulette de la rondelle": "Puck Amulet",
+  "Médaille du jardinage": "Gardening Medal", "Sifflet d'arbitre": "Referee's Whistle",
+  "Amulette du dernier sandwich": "Last Sandwich Amulet",
+  "mutant": "Mutant", "augmenté": "Augmented", "hybride": "Hybrid", "corrompu": "Corrupted",
+  "évolué": "Evolved", "surexposé": "Overexposed", "béni": "Blessed", "chaotique": "Chaotic", "primordial": "Primordial",
+  "Fade": "Faded", "Déchiré": "Torn", "Plissé": "Pleated", "Rembourré": "Padded", "Troué": "Holey",
+  "Réfléchissant": "Reflective", "Élastique": "Elastic", "Givré": "Frosty", "Piquant": "Spiky",
+  "Bariolé": "Garish", "Sournois": "Sneaky", "Géant": "Giant", "Mini": "Mini", "Volant": "Floating",
+  "un portefeuille de rate": "a rat wallet", "un bec d'autruche": "an ostrich beak",
+  "un échantillon de slime vert": "a green slime sample", "une trompe de stirge": "a stirge proboscis",
+  "un collier de lévrier": "a greyhound collar", "une chaussette de gobelin": "a goblin sock",
+  "une dent de rat": "a rat tooth", "un bout de ficelle": "a piece of string",
+  "le talon de bottine de l'elfe": "the elf's boot heel", "un grumeau de gruau": "a lump of porridge",
+  "un ongle de béhémoth": "a behemoth nail", "une plume de pigeon": "a pigeon feather",
+  "un bouchon de bouteille de sorcier": "a wizard's bottle cork", "une moitié de clé": "a half key",
+  "un morceau de chandelle": "a piece of candle", "une patte de crabe": "a crab claw",
+  "un éclat d'épée de bois": "a wooden sword shard", "le journal d'hier": "yesterday's newspaper",
+  "une pièce très brillante (fausse)": "a very shiny coin (fake)", "un caillou significatif": "a meaningful pebble",
+  "un chapeau de souris": "a mouse hat", "une pelote de laine de troll": "a ball of troll wool",
+  "un bruit (dans une boîte)": "a noise (in a box)", "une carotte suspecte": "a suspicious carrot",
+  "la Lampe du Poulailler": "the Henhouse Lamp", "le Casque du Silence": "the Helmet of Silence",
+  "l'Épée en liège": "the Cork Sword", "le Compas du Néant": "the Compass of Nothingness",
+  "le Chapeau du Maire (officiel)": "the Mayor's Hat (official)", "l'Ombrelle de la pluie rouge": "the Red Rain Parasol",
+  "la Clé de la cave du roi": "the Key to the King's Cellar", "le Miroir du regret": "the Mirror of Regret",
+  "le Traité des chèvres": "the Treatise on Goats", "l'Écharpe du gobelin défunt": "the Deceased Goblin's Scarf",
+  "la Boucle de ceinture du barde": "the Bard's Belt Buckle", "le Tambour en carton": "the Cardboard Drum",
+  "le Serpent en caoutchouc": "the Rubber Snake", "la Louche du destin": "the Ladle of Fate",
+  "l'Horloge à moutons": "the Sheep Clock", "le Parfum de troll (édition limitée)": "the Troll Perfume (limited edition)",
+  "la Cartouche d'encre vide": "the Empty Ink Cartridge", "le Faux moustachu du général": "the General's Fake Mustache",
+  "la Pierre du trône": "the Throne Stone", "le Réveil de la veuve": "the Widow's Alarm Clock",
+  "la Théière du lac": "the Lake Teapot", "le Bouclier de beurre (fondu)": "the Butter Shield (melted)",
+  "la chaussette sacrée": "the sacred sock", "le trèfle à cinq feuilles": "the five-leaf clover",
+  "le flan du boulanger": "the baker's custard tart", "l'anneau du puits": "the ring from the well",
+  "le bout de ficelle": "the piece of string", "le casque du chevalier": "the knight's helmet",
+  "la lune (réfléchie dans le lac)": "the moon (reflected in the lake)", "la recette du gruau": "the porridge recipe",
+  "le bouton de manchette du roi": "the king's cufflink", "la boîte à bruits": "the noise box",
+  "le parchemin illisible": "the illegible scroll", "le porte-clés du sorcier": "the wizard's keychain",
+  "la moitié de clé": "the half key", "le collier du lévrier": "the greyhound's collar",
+  "la dent de rat géant": "the giant rat tooth", "le bouchon de potion (vide)": "the (empty) potion cork",
+  "la carte au trésor (dessinée au dos)": "the treasure map (drawn on the back)", "le chapeau de souris": "the mouse hat",
+  "le talon de bottine de l'elfe": "the elf's boot heel", "l'échelle du fermier": "the farmer's ladder",
+  "le miroir du regret": "the mirror of regret",
+  "la veuve Kowalski": "Widow Kowalski", "le boulanger": "the baker", "le maire": "the mayor",
+  "le sorcier de la tour": "the tower wizard", "le nain du pont": "the bridge dwarf",
+  "le Canadien (sur son élan)": "the Canadian (on his moose)", "la sorcière de la forêt": "the forest witch",
+  "le capitaine des gardes": "the captain of the guard", "le roi (déguisé en roturier)": "the king (disguised as a commoner)",
+  "la guilde des voleurs": "the thieves' guild", "le bibliothécaire grognon": "the grumpy librarian",
+  "la fermière du plateau": "the farmer's wife on the plateau", "le dragon (méfiant)": "the dragon (suspicious)",
+  "la taupe archiviste": "the archivist mole",
+  "un Rat géant": "a Giant Rat", "des ninjas": "some ninjas", "les lémures": "the lemures",
+  "un gobelin contrarié": "an annoyed goblin", "la chimère": "the chimera", "un escalier": "a staircase",
+  "la chaussette sacrée": "the sacred sock", "un orc": "an orc", "le trèfle à cinq feuilles": "the five-leaf clover",
+  "un troll danseur": "a dancing troll", "le flan du boulanger": "the baker's custard tart",
+  "une licorne": "a unicorn", "le Béhémoth": "the Behemoth", "les vrock": "the vrocks",
+  "un élan égaré": "a lost moose", "le puits de la place": "the town square well",
+  "un elfe exalté": "an overexcited elf", "la haie du château": "the castle hedge",
+  "des pigeons": "some pigeons", "un bout de ficelle": "a piece of string",
+  "le journal d'hier": "yesterday's newspaper", "la veuve Kowalski": "Widow Kowalski",
+  "un grumeau de gruau": "a lump of porridge", "le fond du tonneau": "the bottom of the barrel",
+  "un kraken amateur": "an amateur kraken", "le gardien du phare": "the lighthouse keeper",
+  "un pot de miel géant": "a giant honey pot", "les archives perdues": "the lost archives",
+  "un serpent à plumes": "a feathered serpent", "la statue du héros": "the hero's statue",
+  "un nain colérique": "an angry dwarf", "des chauves-souris insomniaques": "some sleepless bats",
+  "le pont en réparation": "the bridge under repair", "une momie farceuse": "a prankster mummy",
+  "le champ de navets": "the turnip field", "un dragon timide": "a shy dragon", "la taverne": "the tavern",
+  "le cimetière des bretelles": "the suspender graveyard", "un golem de paille": "a straw golem",
+  "les égouts royaux": "the royal sewers", "un haricot magique": "a magic bean", "la grotte aux échos": "the echo cave",
+  "Pourfend": "Slices", "Extermine": "Exterminates", "Déchiquette": "Tears apart", "Harcèle": "Harasses",
+  "Écrabouille": "Squashes", "Flatte": "Flatters", "Palpe": "Prods", "Fumige": "Smokes out",
+  "Grignote": "Gnaws", "Dompte": "Tames", "Interroge (brutalement)": "Interrogates (brutally)",
+  "Caresse": "Caresses", "Recherche": "Searches for", "Rassemble": "Gathers",
+  "Compte (et recompte)": "Counts (and recounts)", "Fouille": "Rummages through", "Gratte": "Scratches at",
+  "Siffle vers": "Whistles at", "Éviscère": "Eviscerates", "Pourchasse": "Chases down",
+  "Réprimande": "Scolds", "Inspecte": "Inspects", "Triangule": "Triangulates", "Chante pour": "Sings to",
+  "Sonde": "Probes", "Aplatit": "Flattens", "Chatouille": "Tickles", "Négocie avec": "Negotiates with",
+  "Encourage": "Cheers on", "Mesure": "Measures", "Taquine": "Teases", "Observe": "Observes",
+  "Tricote près de": "Knits near", "Dérange": "Disturbs", "Affronte": "Confronts", "Apprivoise": "Domesticates",
+  "tueur de rats": "rat slayer", "écorcheur de gobelins": "goblin flayer", "dévastateur d'araignées": "spider devastator",
+  "fléau des morts-vivants": "scourge of the undead", "briseur d'os": "bone breaker",
+  "frayeur des cavernes": "fear of the caverns", "massacreur d'orcs": "orc slaughterer",
+  "pourfendeur de trolls": "troll slayer", "ennemi des dragons": "enemy of dragons",
+  "terreur du marais": "terror of the swamp", "gardien de la taverne": "keeper of the tavern",
+  "lame d'acier": "blade of steel", "chasseur de chèvres": "goat hunter",
+  "négociateur de poissonnier": "fishmonger negotiator", "protecteur du poulailler": "protector of the henhouse",
+  "Rat géant": "Giant Rat", "Chauve-souris": "Bat", "Gobelin": "Goblin", "Squelette": "Skeleton",
+  "Araignée des cavernes": "Cave Spider", "Zombie": "Zombie", "Orc": "Orc", "Loup": "Wolf",
+  "Serpent venimeux": "Venomous Snake", "Bandit": "Bandit", "Goule": "Ghoul", "Ogre": "Ogre",
+  "Troll": "Troll", "Golem de pierre": "Stone Golem", "Mage noir": "Dark Mage", "Dragonnet": "Dragonling",
+  "Géant": "Giant", "Licorne sombre": "Dark Unicorn", "Béhémoth": "Behemoth", "Dragon ancien": "Ancient Dragon",
+  "Chèvre enragée": "Raging Goat", "Slime gluant": "Slimy Slime", "Gargouille": "Gargoyle",
+  "Chimère": "Chimera", "Ninja": "Ninja", "Lémure": "Lemure", "Vrock": "Vrock",
+  "Elan domestiqué": "Tamed Moose", "Poule enragée": "Raging Hen", "Souris des champs": "Field Mouse",
+  "Canard colérique": "Angry Duck", "Raton voleur": "Thieving Raccoon", "Écureuil géant": "Giant Squirrel",
+  "Chauve-souris vampirette": "Vampire Bat", "Kobold": "Kobold", "Homme-lézard": "Lizardman",
+  "Harpie": "Harpy", "Scorpion des sables": "Sand Scorpion", "Gnoll": "Gnoll", "Cultiste": "Cultist",
+  "Minotaure": "Minotaur", "Esprit frappeur": "Poltergeist", "Araignée géante": "Giant Spider",
+  "Ours-garou": "Werebear", "Spectre": "Specter", "Méduse": "Medusa", "Momie": "Mummy",
+  "Géant des collines": "Hill Giant", "Djinn mineur": "Minor Djinn", "Croco-mage": "Croco-mage",
+  "Wyverne": "Wyvern", "Golem d'argile": "Clay Golem", "Vampire": "Vampire",
+  "Dévoreur des ombres": "Shadow Devourer", "Kraken juvénile": "Juvenile Kraken",
+  "Balrog miniature": "Miniature Balrog", "Hydre à deux têtes": "Two-Headed Hydra",
+  "Chevalier de la mort": "Death Knight", "Dragon des marais": "Swamp Dragon", "Titan de glace": "Ice Titan",
+  "Archimage fou": "Mad Archmage", "Dragon royal": "Royal Dragon", "Cthulhien": "Cthulhian",
+  "Ascendant draconique": "Draconic Ascendant", "Avatar du chaos": "Avatar of Chaos",
+  "Les Champs du Début": "The Starting Fields", "La Forêt Sombre": "The Dark Forest",
+  "Les Cavernes Grondantes": "The Rumbling Caverns", "Le Marais Putride": "The Putrid Swamp",
+  "La Montagne des Crânes": "The Mountain of Skulls", "Les Terres Arides": "The Barren Lands",
+  "Le Col des Lamentations": "The Pass of Lamentations", "Les Ruines du Serment": "The Ruins of the Oath",
+  "Le Repaire des Anciens": "The Lair of the Ancients",
+  "Coup de lapin": "Rabbit Punch", "Cri de guerre": "War Cry", "Frappe du forgeron": "Blacksmith's Strike",
+  "Balayage": "Sweep", "Coup de bouclier": "Shield Bash", "Charge du taureau": "Bull Charge",
+  "Provocation": "Provocation", "Tourbillon de haches": "Whirlwind of Axes", "Poing bionique": "Bionic Fist",
+  "Coup fatal": "Fatal Blow", "Coup de la dernière chance": "Last-Chance Strike", "Baroud d'honneur": "Last Stand",
+  "Sourire menaçant": "Menacing Smile", "Coup de boule amical": "Friendly Headbutt", "Combo de la baston": "Brawl Combo",
+  "Lumière divine": "Divine Light", "Bénédiction du pain": "Blessing of Bread", "Reproche béni": "Blessed Rebuke",
+  "Guérison du doute": "Healing of Doubt", "Aura de puanteur sainte": "Holy Stench Aura",
+  "Marteau sacré": "Holy Hammer", "Châtiment": "Chastisement", "Sermon punitif": "Punitive Sermon",
+  "Colère du palefrenier": "Groom's Wrath", "Grâce tardive": "Belated Grace",
+  "Bénédiction du gratin": "Blessing of the Cheese Gratin", "Sacre de la brioche": "Consecration of the Brioche",
+  "Prière du lundi": "Monday Prayer", "Aura de bienveillance fatale": "Aura of Deadly Kindness",
+  "Anathème du dentiste": "Anathema of the Dentist",
+  "Boule de feu": "Fireball", "Éclair": "Lightning Bolt", "Main de gloire": "Hand of Glory",
+  "Bourrasque": "Gust", "Transmutation de chèvre": "Goat Transmutation", "Pluie de grenouilles": "Frog Rain",
+  "Contrôle des marées": "Tide Control", "Météore du chaos": "Chaos Meteor",
+  "Explosion mineure (et tardive)": "Minor (and Belated) Explosion", "Rappel des chaussettes": "Recall Socks",
+  "Boule de feu (petite mais tenace)": "Fireball (Small but Persistent)", "Éclair de grille-pain": "Toaster Bolt",
+  "Invocation de la clé perdue": "Summon Lost Key", "Pluie de yaourts": "Yogurt Rain",
+  "Détonation de chaussettes": "Sock Detonation",
+  "Appel de la forêt": "Call of the Forest", "Morsure d'ortie": "Nettle Bite",
+  "Racines grognonnes": "Grumpy Roots", "Invocation de chèvre": "Summon Goat", "Chant des oiseaux": "Birdsong",
+  "Bourdonnement": "Buzzing", "Fertilisation": "Fertilization", "Vent de feuilles": "Wind of Leaves",
+  "Danse du lichen": "Dance of the Lichen", "Séisme (très local)": "Quake (Very Localized)",
+  "Pousse-pousse du chêne": "Oak Rickshaw", "Bourrasque de feuilles mortes": "Gust of Dead Leaves",
+  "Appel de la taupe": "Call of the Mole", "Floraison surprise": "Surprise Bloom",
+  "Tremblement de terre (léger)": "Earthquake (Mild)",
+  "Double pas": "Double Step", "Disparition": "Disappearance", "Flèche sournoise": "Sneaky Arrow",
+  "Bourse légère": "Light Purse", "Coup de l'ombre": "Strike from the Shadows", "Séduction": "Seduction",
+  "Pichet voleur": "Thieving Tankard", "Piche voleuse": "Thieving Tankard", "Tour de passe-passe": "Sleight of Hand", "Coup bas légal": "Legal Low Blow",
+  "Confusion totale": "Total Confusion", "Poche percée": "Hole in Pocket", "Esquive du tavernier": "Barkeep's Dodge",
+  "Regard déstabilisant": "Unsettling Gaze", "Pièce à double face": "Double-Headed Coin",
+  "Passe-muraille (optionnel)": "Walk Through Walls (Optional)",
+  "terrasse": "slays", "réduit en miettes": "smashes to bits", "expédie": "dispatches",
+  "élimine": "eliminates", "met en pièces": "tears to pieces", "envoie bouler": "sends packing",
+  "est trop coriace, vous battez en retraite sans butin.": "is too tough, you retreat empty-handed.",
+  "vous repousse, vous cherchez une cible plus raisonnable.": "pushes you back, you look for a more reasonable target.",
+  "s'avère être une brute, vous décidez de revenir plus tard.": "turns out to be a brute, you decide to come back later.",
+  "Génération du visage...": "Generating face...", "Tirage des 3d6...": "Rolling 3d6...",
+  "Achat de l'équipement de départ...": "Buying starting equipment...", "Consultation de la guilde...": "Consulting the guild...",
+  "Recherche d'une quête absurde...": "Looking for an absurd quest...",
+  "Mise à jour du fichier de personnage...": "Updating character file...",
+  "Cirage de la cotte de mailles...": "Polishing the chainmail...", "Apprentissage du premier sort...": "Learning the first spell...",
+  "Validation auprès du maire du village...": "Getting approval from the village mayor...",
+  "Cueille des baies sauvages": "Forage for wild berries", "Débusque un piège sur le sentier": "Spot a trap on the trail",
+  "Fouille un monceau de décombres": "Dig through a pile of rubble",
+  "Trans-kobold": "Trans-kobold", "Loup-garou femelle": "Female werewolf", "Aenigma": "Aenigma",
+  "Kobold": "Kobold", "Nain": "Dwarf", "Elfe sombre": "Dark elf", "Demi-orque": "Half-orc",
+  "Halfelin": "Halfling", "Gobelin": "Goblin", "Gnome": "Gnome", "Homme-rat": "Rat-man",
+  "Citrouille": "Pumpkin", "Tortue": "Turtle", "Français": "French", "Wallaby": "Wallaby", "Morveux": "Snotling",
+  "Combattant": "Fighter", "Barbare": "Barbarian", "Berserker": "Berserker", "Paladin": "Paladin",
+  "Chevalier": "Knight", "Maître d'épée": "Sword Master", "Rôdeur": "Ranger", "Chasseur": "Hunter",
+  "Assassin": "Assassin", "Voleur": "Thief", "Barde": "Bard", "Danseur": "Dancer", "Magicien": "Wizard",
+  "Sorcier": "Sorcerer", "Nécromancien": "Necromancer", "Prêtre": "Priest", "Druide": "Druid", "Écuyer": "Squire"
+};
 
 /* ============================================================
    STATS : FOR, CON, DEX, INT, SAG, CHA
@@ -341,22 +831,22 @@ const AVG_TOTAL = 63; // moyenne de 6 × 3d6 (6 × 10,5)
    ============================================================ */
 
 const RACES = [
-  { name: "Trans-kobold",      bonus: { str: 0,  con: -1, dex: 2,  int: 1,  wis: 0,  cha: 0 }, desc: "Kobold, enfin la bonne enveloppe." },
-  { name: "Loup-garou femelle", bonus: { str: 2,  con: 0,  dex: 1,  int: 0,  wis: 0,  cha: 0 }, desc: "Griffe et hurle, surtout à la pleine lune." },
-  { name: "Aenigma",           bonus: { str: 0,  con: -1, dex: 0,  int: 3,  wis: 0,  cha: 0 }, desc: "Personne ne sait ce que c'est. Eux non plus." },
-  { name: "Kobold",            bonus: { str: -1, con: 0,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Petit, sournois, et toujours trop nombreux." },
-  { name: "Nain",              bonus: { str: 2,  con: 2,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Barbe, bière et pioche." },
-  { name: "Elfe sombre",       bonus: { str: 0,  con: -1, dex: 1,  int: 2,  wis: 0,  cha: 0 }, desc: "Sombres, pas forcément méchants. Souvent." },
-  { name: "Demi-orque",        bonus: { str: 3,  con: 1,  dex: 0,  int: -2, wis: 0,  cha: -1 }, desc: "La moitié qui tape le plus fort." },
-  { name: "Halfelin",          bonus: { str: -1, con: 0,  dex: 3,  int: 0,  wis: 0,  cha: 1 }, desc: "Petit, vif, et toujours affamé." },
-  { name: "Gobelin",           bonus: { str: 1,  con: -1, dex: 2,  int: -1, wis: 0,  cha: 0 }, desc: "Rusé, sauf quand il se prend les pieds." },
-  { name: "Gnome",             bonus: { str: -1, con: 1,  dex: 0,  int: 2,  wis: 0,  cha: 0 }, desc: "Invente des machines bizarres." },
-  { name: "Homme-rat",         bonus: { str: 0,  con: 1,  dex: 2,  int: 0,  wis: 0,  cha: 0 }, desc: "Ronge tout, stocke tout." },
-  { name: "Citrouille",        bonus: { str: 2,  con: 0,  dex: -1, int: 2,  wis: 0,  cha: -1 }, desc: "Effrayante, surtout en octobre." },
-  { name: "Tortue",            bonus: { str: 0,  con: 3,  dex: -2, int: 0,  wis: 1,  cha: 0 }, desc: "Lente, mais presque indestructible." },
-  { name: "Français",          bonus: { str: 1,  con: 1,  dex: 0,  int: 0,  wis: 0,  cha: 1 }, desc: "Poliment désolé, surtout en grève. Jamais pressé." },
-  { name: "Wallaby",           bonus: { str: 0,  con: 0,  dex: 3,  int: 0,  wis: 0,  cha: 0 }, desc: "Saute partout et donne des coups de pied." },
-  { name: "Morveux",           bonus: { str: -1, con: 1,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Dégoutant, mais diablement résilient." }
+  { name: "Trans-kobold",      gender: "m", bonus: { str: 0,  con: -1, dex: 2,  int: 1,  wis: 0,  cha: 0 }, desc: "Kobold, enfin la bonne enveloppe.", descEn: "A kobold, finally in the right body." },
+  { name: "Loup-garou femelle", gender: "f", bonus: { str: 2,  con: 0,  dex: 1,  int: 0,  wis: 0,  cha: 0 }, desc: "Griffe et hurle, surtout à la pleine lune.", descEn: "Claws and howls, especially at full moon." },
+  { name: "Aenigma",           gender: "m", bonus: { str: 0,  con: -1, dex: 0,  int: 3,  wis: 0,  cha: 0 }, desc: "Personne ne sait ce que c'est. Eux non plus.", descEn: "Nobody knows what it is. Not even them." },
+  { name: "Kobold",            gender: "m", bonus: { str: -1, con: 0,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Petit, sournois, et toujours trop nombreux.", descEn: "Small, sneaky, and always too numerous." },
+  { name: "Nain",              gender: "m", bonus: { str: 2,  con: 2,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Barbe, bière et pioche.", descEn: "Beard, beer and pickaxe." },
+  { name: "Elfe sombre",       gender: "m", bonus: { str: 0,  con: -1, dex: 1,  int: 2,  wis: 0,  cha: 0 }, desc: "Sombres, pas forcément méchants. Souvent.", descEn: "Dark, not necessarily evil. Often." },
+  { name: "Demi-orque",        gender: "m", bonus: { str: 3,  con: 1,  dex: 0,  int: -2, wis: 0,  cha: -1 }, desc: "La moitié qui tape le plus fort.", descEn: "The half that hits hardest." },
+  { name: "Halfelin",          gender: "m", bonus: { str: -1, con: 0,  dex: 3,  int: 0,  wis: 0,  cha: 1 }, desc: "Petit, vif, et toujours affamé.", descEn: "Small, quick, and always hungry." },
+  { name: "Gobelin",           gender: "m", bonus: { str: 1,  con: -1, dex: 2,  int: -1, wis: 0,  cha: 0 }, desc: "Rusé, sauf quand il se prend les pieds.", descEn: "Cunning, except when it trips." },
+  { name: "Gnome",             gender: "m", bonus: { str: -1, con: 1,  dex: 0,  int: 2,  wis: 0,  cha: 0 }, desc: "Invente des machines bizarres.", descEn: "Invents weird machines." },
+  { name: "Homme-rat",         gender: "m", bonus: { str: 0,  con: 1,  dex: 2,  int: 0,  wis: 0,  cha: 0 }, desc: "Ronge tout, stocke tout.", descEn: "Gnaws everything, hoards everything." },
+  { name: "Citrouille",        gender: "f", bonus: { str: 2,  con: 0,  dex: -1, int: 2,  wis: 0,  cha: -1 }, desc: "Effrayante, surtout en octobre.", descEn: "Scary, especially in October." },
+  { name: "Tortue",            gender: "f", bonus: { str: 0,  con: 3,  dex: -2, int: 0,  wis: 1,  cha: 0 }, desc: "Lente, mais presque indestructible.", descEn: "Slow, but nearly indestructible." },
+  { name: "Français",          gender: "m", bonus: { str: 1,  con: 1,  dex: 0,  int: 0,  wis: 0,  cha: 1 }, desc: "Poliment désolé, surtout en grève. Jamais pressé.", descEn: "Politely sorry, especially on strike. Never in a hurry." },
+  { name: "Wallaby",           gender: "m", bonus: { str: 0,  con: 0,  dex: 3,  int: 0,  wis: 0,  cha: 0 }, desc: "Saute partout et donne des coups de pied.", descEn: "Hopping everywhere, kicking stuff." },
+  { name: "Morveux",           gender: "m", bonus: { str: -1, con: 1,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Dégoutant, mais diablement résilient.", descEn: "Disgusting, but devilishly resilient." }
 ];
 
 /* ============================================================
@@ -364,24 +854,24 @@ const RACES = [
    ============================================================ */
 
 const CLASSES = [
-  { name: "Combattant",   primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 1,  con: 1,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Le grand classique." },
-  { name: "Barbare",      primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 2,  con: 0,  dex: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Crie, puis tape." },
-  { name: "Berserker",    primary: "str", secondary: "dex", archetype: "fighter",   bonus: { str: 2,  dex: 0,  con: 0,  int: 0,  wis: -1, cha: 0 }, desc: "Tape, puis crie." },
-  { name: "Paladin",      primary: "str", secondary: "wis", archetype: "holy",      bonus: { str: 1,  wis: 1,  con: 0,  dex: -1, int: 0,  cha: 0 }, desc: "Bon, et bien blindé." },
-  { name: "Chevalier",    primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 1,  con: 1,  dex: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Cheval, armure et morale." },
-  { name: "Maître d'épée", primary: "str", secondary: "dex", archetype: "fighter",  bonus: { str: 1,  dex: 1,  con: 0,  int: 0,  wis: 0,  cha: -1 }, desc: "La lame, tout simplement." },
-  { name: "Rôdeur",       primary: "dex", secondary: "int", archetype: "nature",    bonus: { dex: 1,  int: 1,  str: -1, con: 0,  wis: 0,  cha: 0 }, desc: "Sait se cacher très bien." },
-  { name: "Chasseur",     primary: "dex", secondary: "str", archetype: "nature",    bonus: { dex: 1,  str: 1,  con: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Une précision bestiale." },
-  { name: "Assassin",     primary: "dex", secondary: "str", archetype: "trickster", bonus: { dex: 2,  str: 0,  con: 0,  int: 0,  wis: 0,  cha: -1 }, desc: "Invisible, mortel, un peu d'ennui." },
-  { name: "Voleur",       primary: "dex", secondary: "int", archetype: "trickster", bonus: { dex: 1,  int: 1,  str: -1, con: 0,  wis: 0,  cha: 0 }, desc: "Tes poches sont déjà vides." },
-  { name: "Barde",        primary: "cha", secondary: "dex", archetype: "trickster", bonus: { cha: 2,  dex: 0,  con: -1, str: 0,  int: 0,  wis: 0 }, desc: "Fait danser les ennemis." },
-  { name: "Danseur",      primary: "dex", secondary: "cha", archetype: "trickster", bonus: { dex: 1,  cha: 1,  con: 0,  str: -1, int: 0,  wis: 0 }, desc: "La mort, en rythme." },
-  { name: "Magicien",     primary: "int", secondary: "dex", archetype: "mage",      bonus: { int: 1,  dex: 1,  con: -1, str: 0,  wis: 0,  cha: 0 }, desc: "Boule de feu. Encore une." },
-  { name: "Sorcier",      primary: "int", secondary: "dex", archetype: "mage",      bonus: { int: 2,  dex: 0,  con: -1, str: 0,  wis: 0,  cha: 0 }, desc: "Boule de feu, version sombre." },
-  { name: "Nécromancien", primary: "int", secondary: "con", archetype: "mage",      bonus: { int: 1,  con: 1,  cha: -1, str: 0,  dex: 0,  wis: 0 }, desc: "Ne manque jamais de main-d'œuvre." },
-  { name: "Prêtre",       primary: "wis", secondary: "con", archetype: "holy",      bonus: { wis: 1,  con: 1,  dex: -1, str: 0,  int: 0,  cha: 0 }, desc: "Bénédictions et menaces." },
-  { name: "Druide",       primary: "wis", secondary: "con", archetype: "nature",    bonus: { wis: 2,  con: 0,  int: -1, str: 0,  dex: 0,  cha: 0 }, desc: "Parle aux arbres. Ça aide." },
-  { name: "Écuyer",       primary: "str", secondary: "dex", archetype: "fighter",   bonus: { str: 1,  dex: 1,  wis: -1, con: 0,  int: 0,  cha: 0 }, desc: "Un jour, peut-être." }
+  { name: "Combattant",   primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 1,  con: 1,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Le grand classique.", descEn: "The great classic." },
+  { name: "Barbare",      primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 2,  con: 0,  dex: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Crie, puis tape.", descEn: "Shouts, then hits." },
+  { name: "Berserker",    primary: "str", secondary: "dex", archetype: "fighter",   bonus: { str: 2,  dex: 0,  con: 0,  int: 0,  wis: -1, cha: 0 }, desc: "Tape, puis crie.", descEn: "Hits, then shouts." },
+  { name: "Paladin",      primary: "str", secondary: "wis", archetype: "holy",      bonus: { str: 1,  wis: 1,  con: 0,  dex: -1, int: 0,  cha: 0 }, desc: "Bon, et bien blindé.", descEn: "Good, and well armored." },
+  { name: "Chevalier",    primary: "str", secondary: "con", archetype: "fighter",   bonus: { str: 1,  con: 1,  dex: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Cheval, armure et morale.", descEn: "Horse, armor and morale." },
+  { name: "Maître d'épée", primary: "str", secondary: "dex", archetype: "fighter",  bonus: { str: 1,  dex: 1,  con: 0,  int: 0,  wis: 0,  cha: -1 }, desc: "La lame, tout simplement.", descEn: "The blade, pure and simple." },
+  { name: "Rôdeur",       primary: "dex", secondary: "int", archetype: "nature",    bonus: { dex: 1,  int: 1,  str: -1, con: 0,  wis: 0,  cha: 0 }, desc: "Sait se cacher très bien.", descEn: "Knows how to hide very well." },
+  { name: "Chasseur",     primary: "dex", secondary: "str", archetype: "nature",    bonus: { dex: 1,  str: 1,  con: 0,  int: -1, wis: 0,  cha: 0 }, desc: "Une précision bestiale.", descEn: "Bestial precision." },
+  { name: "Assassin",     primary: "dex", secondary: "str", archetype: "trickster", bonus: { dex: 2,  str: 0,  con: 0,  int: 0,  wis: 0,  cha: -1 }, desc: "Invisible, mortel, un peu d'ennui.", descEn: "Invisible, deadly, a bit bored." },
+  { name: "Voleur",       primary: "dex", secondary: "int", archetype: "trickster", bonus: { dex: 1,  int: 1,  str: -1, con: 0,  wis: 0,  cha: 0 }, desc: "Tes poches sont déjà vides.", descEn: "Your pockets are already empty." },
+  { name: "Barde",        primary: "cha", secondary: "dex", archetype: "trickster", bonus: { cha: 2,  dex: 0,  con: -1, str: 0,  int: 0,  wis: 0 }, desc: "Fait danser les ennemis.", descEn: "Makes enemies dance." },
+  { name: "Danseur",      primary: "dex", secondary: "cha", archetype: "trickster", bonus: { dex: 1,  cha: 1,  con: 0,  str: -1, int: 0,  wis: 0 }, desc: "La mort, en rythme.", descEn: "Death, in rhythm." },
+  { name: "Magicien",     primary: "int", secondary: "dex", archetype: "mage",      bonus: { int: 1,  dex: 1,  con: -1, str: 0,  wis: 0,  cha: 0 }, desc: "Boule de feu. Encore une.", descEn: "Fireball. One more." },
+  { name: "Sorcier",      primary: "int", secondary: "dex", archetype: "mage",      bonus: { int: 2,  dex: 0,  con: -1, str: 0,  wis: 0,  cha: 0 }, desc: "Boule de feu, version sombre.", descEn: "Fireball, dark edition." },
+  { name: "Nécromancien", primary: "int", secondary: "con", archetype: "mage",      bonus: { int: 1,  con: 1,  cha: -1, str: 0,  dex: 0,  wis: 0 }, desc: "Ne manque jamais de main-d'œuvre.", descEn: "Never short on workforce." },
+  { name: "Prêtre",       primary: "wis", secondary: "con", archetype: "holy",      bonus: { wis: 1,  con: 1,  dex: -1, str: 0,  int: 0,  cha: 0 }, desc: "Bénédictions et menaces.", descEn: "Blessings and threats." },
+  { name: "Druide",       primary: "wis", secondary: "con", archetype: "nature",    bonus: { wis: 2,  con: 0,  int: -1, str: 0,  dex: 0,  cha: 0 }, desc: "Parle aux arbres. Ça aide.", descEn: "Talks to trees. It helps." },
+  { name: "Écuyer",       primary: "str", secondary: "dex", archetype: "fighter",   bonus: { str: 1,  dex: 1,  wis: -1, con: 0,  int: 0,  cha: 0 }, desc: "Un jour, peut-être.", descEn: "One day, maybe." }
 ];
 
 const SPELL_POOLS = {
@@ -389,7 +879,7 @@ const SPELL_POOLS = {
   holy: ["Lumière divine", "Bénédiction du pain", "Reproche béni", "Guérison du doute", "Aura de puanteur sainte", "Marteau sacré", "Châtiment", "Sermon punitif", "Colère du palefrenier", "Grâce tardive", "Bénédiction du gratin", "Sacre de la brioche", "Prière du lundi", "Aura de bienveillance fatale", "Anathème du dentiste"],
   mage: ["Boule de feu", "Éclair", "Main de gloire", "Bourrasque", "Transmutation de chèvre", "Pluie de grenouilles", "Contrôle des marées", "Météore du chaos", "Explosion mineure (et tardive)", "Rappel des chaussettes", "Boule de feu (petite mais tenace)", "Éclair de grille-pain", "Invocation de la clé perdue", "Pluie de yaourts", "Détonation de chaussettes"],
   nature: ["Appel de la forêt", "Morsure d'ortie", "Racines grognonnes", "Invocation de chèvre", "Chant des oiseaux", "Bourdonnement", "Fertilisation", "Vent de feuilles", "Danse du lichen", "Séisme (très local)", "Pousse-pousse du chêne", "Bourrasque de feuilles mortes", "Appel de la taupe", "Floraison surprise", "Tremblement de terre (léger)"],
-  trickster: ["Double pas", "Disparition", "Flèche sournoise", "Bourse légère", "Coup de l'ombre", "Séduction", "Piche voleuse", "Tour de passe-passe", "Coup bas légal", "Confusion totale", "Poche percée", "Esquive du tavernier", "Regard déstabilisant", "Pièce à double face", "Passe-muraille (optionnel)"]
+  trickster: ["Double pas", "Disparition", "Flèche sournoise", "Bourse légère", "Coup de l'ombre", "Séduction", "Pichet voleur", "Tour de passe-passe", "Coup bas légal", "Confusion totale", "Poche percée", "Esquive du tavernier", "Regard déstabilisant", "Pièce à double face", "Passe-muraille (optionnel)"]
 };
 const SPELL_LEVELS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 20, 23, 26, 29, 33, 37];
 const SPELL_SCHOOL_LABELS = { fighter: "Guerre", holy: "Lumière", mage: "Arcane", nature: "Nature", trickster: "Tromperie" };
@@ -418,6 +908,13 @@ const TITLES = [
   "briseur d'os", "frayeur des cavernes", "massacreur d'orcs", "pourfendeur de trolls",
   "ennemi des dragons", "terreur du marais", "gardien de la taverne", "lame d'acier",
   "chasseur de chèvres", "négociateur de poissonnier", "protecteur du poulailler"
+];
+
+const TITLES_FEM = [
+  "tueuse de rats", "écorcheuse de gobelins", "dévastatrice d'araignées", "fléau des morts-vivants",
+  "briseuse d'os", "frayeur des cavernes", "massacreuse d'orcs", "pourfendeuse de trolls",
+  "ennemie des dragons", "terreur du marais", "gardienne de la taverne", "lame d'acier",
+  "chasseuse de chèvres", "négociatrice de poissonnier", "protectrice du poulailler"
 ];
 
 const ACTION_VERBS = [
@@ -606,12 +1103,12 @@ const ZONES = [
 ];
 
 const EVENTS = [
-  { kind: "gold", text: "Le héros trouve une bourse abandonnée.",              gold: [10, 30] },
-  { kind: "gold", text: "Un colporteur de passage échange quelques babioles.", gold: [15, 40] },
-  { kind: "gold", text: "Le héros récupère une prime oubliée.",                gold: [20, 50] },
-  { kind: "item", text: "Un colporteur propose une affaire irrésistible." },
-  { kind: "treasure", text: "Le héros ouvre un coffre oublié : un trésor !" },
-  { kind: "mimic", text: "Un coffre se révèle être une mimique !" }
+  { kind: "gold", text: "Le héros trouve une bourse abandonnée.",              textEn: "The hero finds an abandoned purse.",              gold: [10, 30] },
+  { kind: "gold", text: "Un colporteur de passage échange quelques babioles.", textEn: "A passing peddler trades some trinkets.",          gold: [15, 40] },
+  { kind: "gold", text: "Le héros récupère une prime oubliée.",                textEn: "The hero collects a forgotten bounty.",           gold: [20, 50] },
+  { kind: "item", text: "Un colporteur propose une affaire irrésistible.",     textEn: "A peddler offers an irresistible deal." },
+  { kind: "treasure", text: "Le héros ouvre un coffre oublié : un trésor !",   textEn: "The hero opens a forgotten chest: a treasure!" },
+  { kind: "mimic", text: "Un coffre se révèle être une mimique !",             textEn: "A chest turns out to be a mimic!" }
 ];
 
 /* ============================================================
@@ -781,6 +1278,8 @@ const JUNK = [
 ];
 
 const SLOT_LABELS = { arme: "Arme", tete: "Tête", torse: "Torse", jambes: "Jambes", pieds: "Pieds", mains: "Mains", anneau: "Anneau", amule: "Amulette" };
+const SLOT_LABELS_EN = { arme: "Weapon", tete: "Head", torse: "Chest", jambes: "Legs", pieds: "Feet", mains: "Hands", anneau: "Ring", amule: "Amulet" };
+function slotLabel(s) { return lang === "en" ? SLOT_LABELS_EN[s] : SLOT_LABELS[s]; }
 
 const START_VERBS = ["engage le combat contre", "fonce sur", "surprend", "affronte", "pourchasse", "tombe nez à nez avec"];
 const KILL_VERBS = ["terrasse", "réduit en miettes", "expédie", "élimine", "met en pièces", "envoie bouler"];
@@ -796,7 +1295,7 @@ const RETREAT_MSGS = [
 
 const MIN_ACTION = 3;       // durée d'action minimale (s)
 const MAX_ACTION = 25;      // durée d'action maximale (s)
-const XP_SCALE = 0.15;      // réduit massivement l'XP gagnée (jeu très long)
+const XP_K = 0.37;          // Gain XP « Progress Quest » : × niveau², coût 80×niveau³ → niveau 50 en ~1 mois
 const SAVE_KEY = "questingSimulatorWin95Save";
 const SAVE_INTERVAL = 30000; // 30 secondes
 const TICK_MS = 1000;
@@ -854,9 +1353,9 @@ function bonusText(bonus) {
   const parts = [];
   for (const k in bonus) {
     const v = bonus[k];
-    if (v !== 0) parts.push((v > 0 ? "+" : "") + v + " " + STAT_LABELS[k].toLowerCase());
+    if (v !== 0) parts.push((v > 0 ? "+" : "") + v + " " + statLabel(k).toLowerCase());
   }
-  return parts.length ? parts.join(", ") : "Aucun bonus";
+  return parts.length ? parts.join(", ") : T("noBonus");
 }
 
 function renderCreation() {
@@ -867,8 +1366,8 @@ function renderCreation() {
     const card = document.createElement("div");
     card.className = "stat-card";
     card.innerHTML =
-      '<span class="sname">' + STAT_LABELS[k] + '</span>' +
-      '<span class="sdice">3d6 : ' + creation.base[k] + '</span>' +
+      '<span class="sname">' + statLabel(k) + '</span>' +
+      '<span class="sdice">' + (lang === "en" ? "3d6: " : "3d6 : ") + creation.base[k] + '</span>' +
       '<span class="sval">' + f.value + '</span>' +
       '<span class="sbonus">' + (f.bonus > 0 ? "+" + f.bonus : f.bonus === 0 ? "" : f.bonus) + '</span>' +
       '<button class="winbtn" data-roll="' + k + '">3d6</button>';
@@ -905,8 +1404,8 @@ function renderCreation() {
 function updateInfo() {
   const ri = document.getElementById("raceInfo");
   const ci = document.getElementById("classInfo");
-  ri.textContent = creation.race ? "Bonus : " + bonusText(creation.race.bonus) + " — " + creation.race.desc : "";
-  ci.textContent = creation.cls ? "Bonus : " + bonusText(creation.cls.bonus) + " — " + creation.cls.desc + " Sorts d'" + creation.cls.archetype + "." : "";
+  ri.textContent = creation.race ? T("bonus") + bonusText(creation.race.bonus) + " — " + (lang === "en" ? creation.race.descEn : creation.race.desc) : "";
+  ci.textContent = creation.cls ? T("bonus") + bonusText(creation.cls.bonus) + " — " + (lang === "en" ? creation.cls.descEn : creation.cls.desc) + " " + T("sc_" + creation.cls.archetype) + "." : "";
 }
 
 document.getElementById("raceSelect").addEventListener("change", function (e) {
@@ -944,9 +1443,9 @@ const LOAD_MSGS = [
 ];
 
 function startAdventure() {
-  if (!creation.name.trim()) { document.getElementById("nameWarn").textContent = "Donnez un nom à votre héros !"; return; }
-  if (!creation.race) { document.getElementById("nameWarn").textContent = "Choisissez une race !"; return; }
-  if (!creation.cls) { document.getElementById("nameWarn").textContent = "Choisissez une classe !"; return; }
+  if (!creation.name.trim()) { document.getElementById("nameWarn").textContent = T("warnName"); return; }
+  if (!creation.race) { document.getElementById("nameWarn").textContent = T("warnRace"); return; }
+  if (!creation.cls) { document.getElementById("nameWarn").textContent = T("warnClass"); return; }
 
   const btn = document.getElementById("startBtn");
   btn.disabled = true;
@@ -958,7 +1457,7 @@ function startAdventure() {
   const iv = setInterval(function () {
     seg += 1;
     renderSeg("loadBar", TOTAL_SEGS, seg);
-    label.textContent = pick(LOAD_MSGS);
+    label.textContent = tr(pick(LOAD_MSGS));
     if (seg >= TOTAL_SEGS) {
       clearInterval(iv);
       setTimeout(function () {
@@ -982,6 +1481,7 @@ document.getElementById("startBtn").addEventListener("click", startAdventure);
 function newGame() {
   game = {
     version: VERSION,
+    lang: lang,
     name: creation.name,
     race: creation.race,
     class: creation.cls,
@@ -1029,9 +1529,9 @@ function newGame() {
   startQuest();
   startNextAction();
   checkSpellLearning();
-  log("system", "Votre aventure commence, " + game.name + " !");
-  log("system", "Race : " + game.race.name + " — Classe : " + game.class.name + " (basée sur la " + STAT_LABELS[game.class.primary].toLowerCase() + ").");
-  log("quest", "Quête acceptée : « " + game.quest.text + " ».");
+  log("system", fmt(T("startMsg"), { n: game.name }));
+  log("system", fmt(T("raceClass"), { r: tr(game.race.name), c: tr(game.class.name), s: statLabel(game.class.primary).toLowerCase() }));
+  log("quest", fmt(T("questAcc"), { t: questText(game.quest) }));
 }
 
 function clampStat(v) { return Math.max(3, v); }
@@ -1042,12 +1542,48 @@ function clampStat(v) { return Math.max(3, v); }
 
 const QUEST_TYPES = ["deliver", "exterminate", "fetch", "seek"];
 const QUEST_TYPE_LABELS = { deliver: "Livraison", exterminate: "Extermination", fetch: "Récupération", seek: "Recherche", boss: "Boss" };
+const QUEST_TYPE_LABELS_EN = { deliver: "Delivery", exterminate: "Extermination", fetch: "Fetch", seek: "Seek", boss: "Boss" };
 const QUEST_TYPE_XP = { deliver: 1, exterminate: 1.5, fetch: 1.25, seek: 0.75, boss: 1 };
+
+function questTypeLabel(t) { return lang === "en" ? (QUEST_TYPE_LABELS_EN[t] || t) : (QUEST_TYPE_LABELS[t] || t); }
 
 function prepTo(target) {
   if (/^les /i.test(target)) return "aux " + target.slice(4);
   if (/^le /i.test(target)) return "au " + target.slice(3);
   return "à " + target;
+}
+
+function questText(q) {
+  if (!q) return "";
+  if (lang === "en") {
+    if (q.type === "exterminate") return "Exterminate " + monsterPluralEn(q.target) + ".";
+    if (q.type === "boss") return "BOSS: a legendary " + tr(q.target) + " terrorizes the region — slay it!";
+    if (q.type === "deliver") return "Deliver " + tr(q.item ? q.item.name : "") + " to " + tr(q.recipient || "") + ".";
+    if (q.type === "fetch") return "Fetch " + tr(q.item ? q.item.name : "") + ".";
+    if (q.type === "seek") return "Search for " + tr(q.item ? q.item.name : "") + ".";
+    return q.text || "";
+  }
+  if (q.type === "exterminate") return "Extermine des " + monsterPlural(q.target) + ".";
+  if (q.type === "boss") return "BOSS : " + q.target + " légendaire terrorise la région — " + (article(q.target) === "une" ? "terrasse-la" : "terrasse-le") + " !";
+  if (q.type === "deliver") return "Remets " + (q.item ? q.item.name : "") + " " + prepTo(q.recipient || "") + ".";
+  if (q.type === "fetch") return "Rapporte " + (q.item ? q.item.name : "") + ".";
+  if (q.type === "seek") return "Cherche " + (q.item ? q.item.name : "") + ".";
+  return q.text || "";
+}
+
+function eventText(e) {
+  if (lang === "en") return (e.textEn || "").replace("The hero", heroRef());
+  return e.text.replace("Le héros", heroRef());
+}
+
+function itemDisplayName(item) {
+  if (item.kind === "equip") {
+    let n = (item.mutation2 ? tr(item.mutation2) + " " : "") + tr(item.base);
+    if (item.plus > 0) n += " +" + item.plus;
+    if (item.mutation) n += " " + tr(item.mutation);
+    return n;
+  }
+  return tr(item.name || "");
 }
 
 function startQuest() {
@@ -1067,6 +1603,8 @@ function startQuest() {
     type: type,
     text: "",
     target: "",
+    item: null,
+    recipient: "",
     count: 0,
     need: randBetween(10, 50)
   };
@@ -1074,23 +1612,21 @@ function startQuest() {
   if (type === "exterminate") {
     const mons = pick(monsterPool());
     q.target = mons.name;
-    q.text = "Extermine des " + monsterPlural(mons.name) + ".";
   } else if (type === "boss") {
     const mons = pick(monsterPool());
     q.target = mons.name;
     q.need = 100;
-    q.text = "BOSS : " + mons.name + " légendaire terrorise la région — terrasse-le !";
   } else if (type === "deliver") {
     const it = pick(QUEST_ITEMS);
-    q.target = pick(DELIVER_RECIPIENTS);
-    q.text = "Remets " + it.name + " " + prepTo(q.target) + ".";
+    q.item = it;
+    q.recipient = pick(DELIVER_RECIPIENTS);
   } else if (type === "fetch") {
-    const it = pick(QUEST_ITEMS);
-    q.text = "Rapporte " + it.name + ".";
+    q.item = pick(QUEST_ITEMS);
   } else { // seek
-    const it = pick(QUEST_ITEMS);
-    q.text = "Cherche " + it.name + ".";
+    q.item = pick(QUEST_ITEMS);
   }
+
+  q.text = questText(q);
 
   game.quest = q;
   game.questLog.push({ text: q.text, done: false });
@@ -1098,7 +1634,7 @@ function startQuest() {
 }
 
 function questXp(q) {
-  return Math.max(1, Math.round((60 + game.level * 28) * xpMultiplier() * XP_SCALE * (q.need / 5) * (QUEST_TYPE_XP[q.type] || 1)));
+  return Math.max(1, Math.round(XP_K * game.level * game.level * xpMultiplier() * (q.need / 5) * (QUEST_TYPE_XP[q.type] || 1)));
 }
 
 function completeQuest() {
@@ -1109,7 +1645,7 @@ function completeQuest() {
   game.xp += bonusXp;
   game.gold += bonusGold;
   game.treasures += 1;
-  log("quest", "Quête terminée : « " + game.quest.text + " » (+" + bonusXp + " XP, +" + bonusGold + " or).");
+  log("quest", fmt(T("questDone"), { t: questText(game.quest), x: bonusXp, g: bonusGold }));
   if (isBoss) {
     game.bossKills += 1;
     bossReward();
@@ -1133,13 +1669,13 @@ function bossReward() {
     const item = generateEquip(game.level);
     game.itemsFound += 1;
     if (autoEquip(item)) {
-      log("loot", "Butin de boss : " + item.name + " — équipé immédiatement !");
+      log("loot", fmt(T("bossEquip"), { i: itemDisplayName(item) }));
     } else {
       game.inventory.push(item);
-      log("loot", "Butin de boss : " + item.name + " (rangé dans l'inventaire).");
+      log("loot", fmt(T("bossInv"), { i: itemDisplayName(item) }));
     }
   }
-  log("loot", "Le boss est vaincu, ses reliques jonchent le sol !");
+  log("loot", T("bossDown"));
 }
 
 function questReward() {
@@ -1154,24 +1690,24 @@ function rewardUniqueItem() {
   const item = { id: uid(), kind: "unique", name: pick(UNIQUE_ITEMS), slot: "divers", dmg: 0, armor: 0 };
   game.itemsFound += 1;
   game.inventory.push(item);
-  log("loot", "Récompense : objet unique — " + item.name + " !");
+  log("loot", fmt(T("rewUnique"), { i: itemDisplayName(item) }));
 }
 
 function rewardEquipment() {
   const item = generateEquip(game.level);
   game.itemsFound += 1;
   if (autoEquip(item)) {
-    log("loot", "Récompense : " + item.name + " — équipé immédiatement !");
+    log("loot", fmt(T("rewEquip"), { i: itemDisplayName(item) }));
   } else {
     game.inventory.push(item);
-    log("loot", "Récompense : " + item.name + " (rangé dans l'inventaire).");
+    log("loot", fmt(T("rewEquipInv"), { i: itemDisplayName(item) }));
   }
 }
 
 function rewardStat() {
   const k = pick(STAT_ORDER);
   game.stats[k] += 1;
-  log("level", "Récompense de quête : +1 " + STAT_LABELS[k].toLowerCase() + " !");
+  log("level", fmt(T("rewStat"), { s: statLabel(k).toLowerCase() }));
 }
 
 function rewardSpell() {
@@ -1187,21 +1723,21 @@ function rewardSpell() {
   }
   if (foreign.length > 0 && (available.length === 0 || Math.random() < 0.4)) {
     const name = pick(foreign);
-    const school = SPELL_SCHOOL_LABELS[spellIndex(name).pool] || "étrangère";
+    const school = schoolLabel(spellIndex(name).pool);
     game.spells.push({ name: name, lvl: 1 });
-    log("level", "Récompense : vous apprenez un sort d'une autre école (" + school + ") : « " + name + " » !");
+    log("level", fmt(T("rewForeign"), { sc: school, n: tr(name) }));
   } else if (available.length > 0) {
     const name = pick(available);
     game.spells.push({ name: name, lvl: 1 });
-    log("level", "Récompense : vous apprenez un nouveau sort « " + name + " » !");
+    log("level", fmt(T("rewNew"), { n: tr(name) }));
   } else if (game.spells.length > 0) {
     const s = pick(game.spells);
     s.lvl += 1;
-    log("level", "Récompense : « " + s.name + " » passe au niveau " + s.lvl + " !");
+    log("level", fmt(T("rewUp"), { n: tr(s.name), l: s.lvl }));
   } else {
     const goldGain = 40;
     game.gold += goldGain;
-    log("loot", "Récompense : le grimoire est vide, vous trouvez " + goldGain + " or à la place.");
+    log("loot", fmt(T("rewGold"), { g: goldGain }));
   }
 }
 
@@ -1286,14 +1822,14 @@ function checkSpellLearning() {
     const known = game.spells.some(function (s) { return s.name === pool[i]; });
     if (game.level >= spellTier(i) && !known) {
       game.spells.push({ name: pool[i], lvl: 1 });
-      log("level", "Vous apprenez un nouveau sort : « " + pool[i] + " » !");
+      log("level", fmt(T("learn"), { n: tr(pool[i]) }));
       learned = true;
     }
   }
   if (!learned && game.level >= spellTier(pool.length) && game.spells.length) {
     const s = pick(game.spells);
     s.lvl += 1;
-    log("level", "Votre maîtrise s'affine : « " + s.name + " » passe au niveau " + s.lvl + " !");
+    log("level", fmt(T("mastery"), { n: tr(s.name), l: s.lvl }));
   }
 }
 
@@ -1304,11 +1840,12 @@ function checkSpellLearning() {
 function tick() {
   if (!game) return;
   game.totalTime += 1;
+  clampVitals();
 
   const act = currentAct();
   if (act > game.currentAct) {
     for (let a = game.currentAct; a < act; a++) {
-      log("system", "Acte " + a + " terminé — joué " + actHours(a) + " h !");
+      log("system", fmt(T("actEnded"), { a: a, h: actHours(a) }));
     }
     game.currentAct = act;
   }
@@ -1360,7 +1897,7 @@ function resolveAction() {
     doShopping();
     game.shopping = false;
     startQuest();
-    log("quest", "Nouvelle quête : « " + game.quest.text + " ».");
+    log("quest", fmt(T("newQuest"), { t: questText(game.quest) }));
     startNextAction();
     return;
   }
@@ -1386,7 +1923,7 @@ function resolveAction() {
   const heroWins = Math.random() < Math.max(0.08, Math.min(0.97, chance));
 
   if (heroWins) {
-    const xpGain = Math.max(1, Math.round((mons.lvl * 4 + 3) * (0.8 + Math.random() * 0.6) * xpMultiplier() * XP_SCALE));
+    const xpGain = Math.max(1, Math.round(XP_K * game.level * game.level * (0.8 + Math.random() * 0.6) * xpMultiplier()));
     const goldGain = randBetween(mons.gold[0], mons.gold[1]);
     game.xp += xpGain;
     game.gold += goldGain;
@@ -1394,11 +1931,19 @@ function resolveAction() {
     game.kills += 1;
     game.killsByMonster[mons.name] = (game.killsByMonster[mons.name] || 0) + 1;
     if (game.quest) game.quest.count += 1;
-    log("combat", "Le héros " + pick(KILL_VERBS) + " " + article(mons.name) + " " + mons.name + " (+" + xpGain + " XP, +" + goldGain + " or).");
+    if (lang === "en") {
+      log("combat", fmt(T("killLine"), { hero: heroRef(), v: tr(pick(KILL_VERBS)), art: articleEn(tr(mons.name)), m: tr(mons.name), x: xpGain, g: goldGain }));
+    } else {
+      log("combat", fmt(T("killLine"), { hero: heroRef(), v: pick(KILL_VERBS), art: article(mons.name), m: mons.name, x: xpGain, g: goldGain }));
+    }
     maybeDropItem(mons);
     checkLevelUp();
   } else {
-    log("combat", "Le " + mons.name + " " + pick(RETREAT_MSGS));
+    if (lang === "en") {
+      log("combat", "The " + tr(mons.name) + " " + tr(pick(RETREAT_MSGS)));
+    } else {
+      log("combat", definiteArticle(mons.name) + mons.name + " " + pick(RETREAT_MSGS));
+    }
   }
 
   if (!game.pendingEvent && Math.random() < 0.12) game.pendingEvent = pick(EVENTS);
@@ -1424,7 +1969,7 @@ function doShopping() {
     }
   }
   clampVitals();
-  log("loot", "Boutique : " + sold + " objet(s) vendu(s), " + bought + " pièce(s) achetée(s) (charisme = meilleures pièces).");
+  log("loot", fmt(T("shopLine"), { s: sold, b: bought }));
 }
 
 function makeShopItemForSlot(slot) {
@@ -1498,13 +2043,11 @@ function mutationColor(mut) {
 }
 
 function itemNameHtml(item) {
-  if (!item.mutation && !item.mutation2) return esc(item.name);
-  let plain = item.name;
-  if (item.mutation) plain = plain.replace(" " + item.mutation, "");
-  if (item.mutation2) plain = plain.replace(item.mutation2 + " ", "");
-  let html = esc(plain);
-  if (item.mutation2) html = '<span style="color:' + mutationColor(item.mutation2) + ';font-weight:bold;">' + esc(item.mutation2) + "</span> " + html;
-  if (item.mutation) html += ' <span style="color:' + mutationColor(item.mutation) + ';font-weight:bold;">' + esc(item.mutation) + "</span>";
+  if (item.kind !== "equip") return esc(tr(item.name || ""));
+  let html = esc(tr(item.base));
+  if (item.plus > 0) html += " +" + item.plus;
+  if (item.mutation2) html = '<span style="color:' + mutationColor(item.mutation2) + ';font-weight:bold;">' + esc(tr(item.mutation2)) + "</span> " + html;
+  if (item.mutation) html += ' <span style="color:' + mutationColor(item.mutation) + ';font-weight:bold;">' + esc(tr(item.mutation)) + "</span>";
   return html;
 }
 
@@ -1528,15 +2071,15 @@ function applyEvent(e) {
     const g = randBetween(e.gold[0], e.gold[1]);
     game.gold += g;
     game.treasures += 1;
-    log("event", e.text + " (+" + g + " or).");
+    log("event", eventText(e) + " (+" + g + " " + (lang === "en" ? "gold" : "or") + ").");
   } else if (e.kind === "item") {
     const item = makeShopItemForSlot(pick(Object.keys(SLOT_LABELS)));
     game.itemsFound += 1;
     if (autoEquip(item)) {
-      log("event", e.text + " Il achète " + item.name + " — équipé immédiatement !");
+      log("event", eventText(e) + " " + fmt(T("buysEq"), { ref: heroRef(), i: itemDisplayName(item) }));
     } else {
       game.inventory.push(item);
-      log("event", e.text + " Il achète " + item.name + " (rangé dans l'inventaire).");
+      log("event", eventText(e) + " " + fmt(T("buysInv"), { ref: heroRef(), i: itemDisplayName(item) }));
     }
   } else if (e.kind === "treasure") {
     const roll = Math.random();
@@ -1550,18 +2093,18 @@ function applyEvent(e) {
     }
     game.itemsFound += 1;
     if (item.kind === "equip" && autoEquip(item)) {
-      log("event", e.text + " Il trouve " + item.name + " — équipé immédiatement !");
+      log("event", eventText(e) + " " + fmt(T("findsEq"), { ref: heroRef(), i: itemDisplayName(item) }));
     } else {
       game.inventory.push(item);
-      log("event", e.text + " Il trouve " + item.name + " (rangé dans l'inventaire).");
+      log("event", eventText(e) + " " + fmt(T("findsInv"), { ref: heroRef(), i: itemDisplayName(item) }));
     }
   } else if (e.kind === "mimic") {
-    const x = Math.max(1, Math.round((40 + game.level * 20) * xpMultiplier() * XP_SCALE));
+    const x = Math.max(1, Math.round(XP_K * game.level * game.level * xpMultiplier()));
     const g = randBetween(10, 40);
     game.xp += x;
     game.gold += g;
     game.treasures += 1;
-    log("event", e.text + " Le héros triomphe du combat (+" + x + " XP, +" + g + " or).");
+    log("event", eventText(e) + " " + fmt(T("mimicWin"), { ref: heroRef(), x: x, g: g }));
     checkLevelUp();
   }
 }
@@ -1601,17 +2144,17 @@ function resolveExtraAction(id) {
     const g = randBetween(2, 12) + Math.floor(game.level * 2);
     game.gold += g;
     game.quest.count += 1;
-    log("loot", "Le héros revend ses cueillettes (+" + g + " or).");
+    log("loot", fmt(T("forage"), { ref: heroRef(), g: g }));
     return;
   }
   if (id === "trap") {
     if (Math.random() < 0.5) {
       const g = randBetween(5, 15);
       game.gold = Math.max(0, game.gold - g);
-      log("combat", "Piège ! Le héros perd " + g + " or en se dépêtrant.");
+      log("combat", fmt(T("trapLoss"), { ref: heroRef(), g: g }));
     } else {
       game.quest.count += 1;
-      log("system", "Le héros désamorce habilement un piège.");
+      log("system", fmt(T("trapDisarm"), { ref: heroRef() }));
     }
     return;
   }
@@ -1623,10 +2166,10 @@ function resolveExtraAction(id) {
     } else if (roll < 0.7) {
       const g = randBetween(10, 30) + game.level * 2;
       game.gold += g;
-      log("loot", "Le héros déniche un petit trésor dans les décombres (+" + g + " or).");
+      log("loot", fmt(T("digFound"), { ref: heroRef(), g: g }));
       game.quest.count += 1;
     } else {
-      log("loot", "Le héros ne trouve que des gravats sans intérêt.");
+      log("loot", fmt(T("digNothing"), { ref: heroRef() }));
     }
     return;
   }
@@ -1638,7 +2181,7 @@ function startNextAction() {
     game.actionType = "combat";
     game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
     game.actionTimer = 0;
-    game.actionText = "Se rend à la boutique...";
+    game.actionText = T("toShop");
     return;
   }
   if (Math.random() < 0.2) {
@@ -1647,7 +2190,7 @@ function startNextAction() {
     game.actionType = a.id;
     game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
     game.actionTimer = 0;
-    game.actionText = a.name + "...";
+    game.actionText = tr(a.name) + "...";
     return;
   }
   const mons = pick(monsterPool());
@@ -1655,18 +2198,23 @@ function startNextAction() {
   game.actionType = "combat";
   game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
   game.actionTimer = 0;
-  game.actionText = pick(ACTION_VERBS) + " " + pick(ACTION_TARGETS) + "...";
+  game.actionText = (lang === "en" ? tr(pick(ACTION_VERBS)) : pick(ACTION_VERBS)) + " " + (lang === "en" ? tr(pick(ACTION_TARGETS)) : pick(ACTION_TARGETS)) + "...";
 }
 
-function article(name) {
-  const fem = {
-    "Araignée des cavernes": 1, "Chauve-souris": 1, "Licorne sombre": 1,
-    "Chèvre enragée": 1, "Chimère": 1, "Gargouille": 1, "Goule": 1,
-    "Poule enragée": 1, "Chauve-souris vampirette": 1, "Harpie": 1,
-    "Araignée géante": 1, "Méduse": 1, "Momie": 1, "Wyverne": 1,
-    "Hydre à deux têtes": 1
-  };
-  return fem[name] || /^[AEIOUYÀÉÊÎÔ]/.test(name) ? "une" : "un";
+const FEMININE_MONSTERS = {
+  "Araignée des cavernes": 1, "Chauve-souris": 1, "Licorne sombre": 1,
+  "Chèvre enragée": 1, "Chimère": 1, "Gargouille": 1, "Goule": 1,
+  "Poule enragée": 1, "Chauve-souris vampirette": 1, "Harpie": 1,
+  "Araignée géante": 1, "Méduse": 1, "Momie": 1, "Souris des champs": 1,
+  "Wyverne": 1, "Hydre à deux têtes": 1
+};
+
+function article(name) { return FEMININE_MONSTERS[name] ? "une" : "un"; }
+
+function definiteArticle(name) {
+  if (/^[AEIOUYÀÉÊÎÔ]/i.test(name)) return "l'";
+  if (FEMININE_MONSTERS[name]) return "la ";
+  return "le ";
 }
 
 function checkLevelUp() {
@@ -1677,25 +2225,31 @@ function checkLevelUp() {
     STAT_ORDER.forEach(function (k) { game.stats[k] += 1; });
     game.maxHp += 15 + game.stats.con;
     game.hp = maxHpTotal();
-    log("level", "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau " + game.level + " (+1 à tous les attributs).");
-    log("system", "Nouveau titre : " + killTitle());
+    log("level", fmt(T("levelUp"), { l: game.level }));
+    log("system", fmt(T("newTitle"), { t: killTitle() }));
     checkSpellLearning();
     checkLevelUp();
   }
 }
 
 function xpNeeded(lvl) {
-  return Math.floor(80 * Math.pow(1.45, lvl - 1));
+  return Math.floor(80 * lvl * lvl * lvl);
 }
 
 function titleForLevel(lvl) {
   const idx = Math.floor((lvl - 1) / 2);
-  if (idx < TITLES.length) return TITLES[idx] + " niveau " + lvl;
-  return "légende immortelle de niveau " + lvl;
+  if (idx < TITLES.length) {
+    const t = lang === "fr" && heroIsFemale() ? TITLES_FEM[idx] : tr(TITLES[idx]);
+    return fmt(T("titleLevel"), { t: t, l: lvl });
+  }
+  return fmt(T("legendTitle"), { l: lvl });
 }
 
 function killTitle() {
-  if (game.bossKills > 0) return "Tueur de boss (niv. " + (Math.floor(game.bossKills / 5) + 1) + ")";
+  if (game.bossKills > 0) {
+    const key = lang === "fr" && heroIsFemale() ? "bossTitleF" : "bossTitle";
+    return fmt(T(key), { n: Math.floor(game.bossKills / 5) + 1 });
+  }
   if (!game.killsByMonster) return titleForLevel(game.level);
   let best = null, bestK = 0;
   for (const n in game.killsByMonster) {
@@ -1703,7 +2257,8 @@ function killTitle() {
   }
   if (!best) return titleForLevel(game.level);
   const lvl = Math.floor(bestK / 50) + 1;
-  return "Tueur de " + best + " (niv. " + lvl + ")";
+  const key = lang === "fr" && heroIsFemale() ? "slayerTitleF" : "slayerTitle";
+  return fmt(T(key), { m: tr(best), n: lvl });
 }
 
 /* ============================================================
@@ -1716,16 +2271,16 @@ function maybeDropItem(mons) {
     const item = generateEquip(mons.lvl);
     game.itemsFound += 1;
     if (autoEquip(item)) {
-      log("loot", "Butin : " + item.name + " — équipé immédiatement !");
+      log("loot", fmt(T("dropEq"), { i: itemDisplayName(item) }));
     } else {
       game.inventory.push(item);
-      log("loot", "Butin : " + item.name + " (rangé dans l'inventaire).");
+      log("loot", fmt(T("dropEqInv"), { i: itemDisplayName(item) }));
     }
   } else if (roll < 0.42) {
     const item = { id: uid(), kind: "junk", name: pick(JUNK), slot: "divers", dmg: 0, armor: 0 };
     game.itemsFound += 1;
     game.inventory.push(item);
-    log("loot", "Objet absurde : " + item.name + " (vous le gardez quand même).");
+    log("loot", fmt(T("junkDrop"), { i: itemDisplayName(item) }));
   }
 }
 
@@ -1782,7 +2337,7 @@ function sellAllInventory() {
   let total = 0;
   game.inventory.forEach(function (it) { total += sellPrice(it); });
   game.gold += total;
-  log("loot", "Le héros vend tout son inventaire (" + game.inventory.length + " objets) pour " + total + " or.");
+  log("loot", fmt(T("soldAll"), { ref: heroRef(), n: game.inventory.length, g: total }));
   game.inventory = [];
 }
 
@@ -1842,17 +2397,17 @@ function render() {
   const g = game;
 
   document.getElementById("heroName").textContent = g.name;
-  document.getElementById("heroMeta").textContent = "Niveau " + g.level + " " + g.race.name + " · " + g.class.name + " · stat primaire : " + STAT_LABELS[g.class.primary].toLowerCase();
+  document.getElementById("heroMeta").textContent = fmt(T("heroMeta"), { l: g.level, r: tr(g.race.name), c: tr(g.class.name), s: statLabel(g.class.primary).toLowerCase() });
   document.getElementById("heroTitle").textContent = killTitle();
 
   const needed = xpNeeded(g.level);
 
-  document.getElementById("actionLabel").textContent = "Action : " + (g.actionText || "en exploration...");
+  document.getElementById("actionLabel").textContent = g.actionText ? fmt(T("actionLine"), { x: g.actionText }) : T("exploring");
   document.getElementById("actionTime").textContent = Math.min(g.actionTimer, g.actionDuration) + "s / " + g.actionDuration + "s";
   renderSeg("actionBar", 10, Math.min(10, g.actionTimer / g.actionDuration * 10));
 
-  document.getElementById("questShort").textContent = g.quest ? g.quest.text : "En route vers la boutique...";
-  document.getElementById("questTime").textContent = g.quest ? QUEST_TYPE_LABELS[g.quest.type] : "";
+  document.getElementById("questShort").textContent = g.quest ? questText(g.quest) : T("toShop");
+  document.getElementById("questTime").textContent = g.quest ? questTypeLabel(g.quest.type) : "";
   renderSeg("questBar", 10, g.quest ? Math.min(10, g.quest.count / g.quest.need * 10) : 0);
 
   document.getElementById("xpText").textContent = g.xp + " / " + needed + " XP";
@@ -1880,8 +2435,8 @@ function render() {
   document.getElementById("zoneText").textContent = zoneName();
 
   let st;
-  if (g.shopping) st = "Se rend à la boutique...";
-  else st = "Action : " + (g.actionText || "en exploration...");
+  if (g.shopping) st = T("toShop");
+  else st = g.actionText ? fmt(T("actionLine"), { x: g.actionText }) : T("exploring");
   document.getElementById("statusText").textContent = st;
 
   renderQuest();
@@ -1901,8 +2456,8 @@ function renderQuest() {
   if (!g.quest) {
     const d = document.createElement("div");
     d.className = "quest-box";
-    d.innerHTML = '<div class="quest-name">En route vers la boutique...</div>' +
-      '<div class="quest-desc">Le héros va vendre ses trouvailles et acheter de meilleures pièces.</div>';
+    d.innerHTML = '<div class="quest-name">' + esc(T("toShop")) + '</div>' +
+      '<div class="quest-desc">' + esc(T("shopDesc")) + '</div>';
     box.appendChild(d);
     return;
   }
@@ -1910,9 +2465,9 @@ function renderQuest() {
   const q = document.createElement("div");
   q.className = "quest-box";
   q.innerHTML =
-    '<div class="quest-name">[' + QUEST_TYPE_LABELS[g.quest.type] + '] « ' + esc(g.quest.text) + ' »</div>' +
-    '<div class="quest-desc">Zone : ' + esc(zoneName()) + "</div>" +
-    '<div class="quest-reward">Récompense : ~' + questXp(g.quest) + " XP, ~" + (30 + g.level * 12) + " or + bonus aléatoire</div>" +
+    '<div class="quest-name">[' + questTypeLabel(g.quest.type) + '] « ' + esc(questText(g.quest)) + ' »</div>' +
+    '<div class="quest-desc">' + esc(fmt(T("zone"), { z: zoneName() })) + "</div>" +
+    '<div class="quest-reward">' + esc(fmt(T("reward"), { x: questXp(g.quest), g: 30 + g.level * 12 })) + '</div>' +
     '<div class="segbar" style="margin-top:6px;">' + makeSegs(10, Math.min(10, g.quest.count / g.quest.need * 10)) + '</div>';
   box.appendChild(q);
 }
@@ -1923,7 +2478,7 @@ function renderSpells() {
   if (!game.spells.length) {
     const d = document.createElement("div");
     d.className = "empty";
-    d.textContent = "Aucun sort pour l'instant.";
+    d.textContent = T("noSpells");
     box.appendChild(d);
     return;
   }
@@ -1931,7 +2486,7 @@ function renderSpells() {
     const div = document.createElement("div");
     div.className = "spell";
     const own = (SPELL_POOLS[game.class.archetype] || []).indexOf(s.name) >= 0;
-    div.textContent = s.name + " (niv. " + s.lvl + ")" + (own ? "" : " · étranger");
+    div.textContent = tr(s.name) + (lang === "en" ? " (lvl. " : " (niv. ") + s.lvl + ")" + (own ? "" : " · " + T("foreign"));
     box.appendChild(div);
   });
 }
@@ -1945,15 +2500,15 @@ function currentZoneIndex() {
 }
 
 function zoneName() {
-  return ZONES[currentZoneIndex()].name;
+  return tr(ZONES[currentZoneIndex()].name);
 }
 
 function itemStatsText(it) {
   const parts = [];
-  if (it.dmg) parts.push(it.dmg + " dégâts");
-  if (it.armor) parts.push(it.armor + " armure");
-  if (it.hp) parts.push(it.hp + " PV");
-  if (it.mp) parts.push(it.mp + " PM");
+  if (it.dmg) parts.push(fmt(T("dmgShort"), { n: it.dmg }));
+  if (it.armor) parts.push(fmt(T("armorShort"), { n: it.armor }));
+  if (it.hp) parts.push(fmt(T("hpShort"), { n: it.hp }));
+  if (it.mp) parts.push(fmt(T("mpShort"), { n: it.mp }));
   return parts.join(" · ");
 }
 
@@ -1963,7 +2518,7 @@ function renderInventory() {
   if (!game.inventory.length) {
     const d = document.createElement("div");
     d.className = "empty";
-    d.textContent = "Aucun objet en réserve.";
+    d.textContent = T("noInv");
     box.appendChild(d);
     return;
   }
@@ -1971,10 +2526,10 @@ function renderInventory() {
     const div = document.createElement("div");
     div.className = "item";
     const sub = it.kind === "junk"
-      ? "Objet absurde"
+      ? T("absurd")
       : it.kind === "unique"
-        ? "Objet unique"
-        : SLOT_LABELS[it.slot] + (itemStatsText(it) ? " · " + itemStatsText(it) : "");
+        ? T("unique")
+        : slotLabel(it.slot) + (itemStatsText(it) ? " · " + itemStatsText(it) : "");
     div.innerHTML =
       '<div class="iname">' + itemNameHtml(it) + "</div>" +
       '<div class="isub">' + sub + "</div>";
@@ -1994,16 +2549,16 @@ function renderEquipment() {
       any = true;
       div.innerHTML =
         '<div class="iname">' + itemNameHtml(it) + "</div>" +
-        '<div class="isub">' + SLOT_LABELS[slot] + (itemStatsText(it) ? " · " + itemStatsText(it) : "") + "</div>";
+        '<div class="isub">' + slotLabel(slot) + (itemStatsText(it) ? " · " + itemStatsText(it) : "") + "</div>";
     } else {
-      div.innerHTML = '<div class="isub">' + SLOT_LABELS[slot] + " : vide</div>";
+      div.innerHTML = '<div class="isub">' + slotLabel(slot) + " : " + T("empty") + "</div>";
     }
     box.appendChild(div);
   }
   if (!any) {
     const d = document.createElement("div");
     d.className = "empty";
-    d.textContent = "Vous êtes en loques.";
+    d.textContent = T("rags");
     box.appendChild(d);
   }
 }
@@ -2042,7 +2597,7 @@ function renderPlot() {
     cb.checked = i <= done;
     cb.disabled = true;
     const span = document.createElement("span");
-    span.textContent = i <= done ? "Acte " + i + " — terminé (" + actHours(i) + " h)" : "Acte " + i + " — en cours";
+    span.textContent = i <= done ? fmt(T("actDone"), { a: i, h: actHours(i) }) : fmt(T("actCur"), { a: i });
     div.appendChild(cb);
     div.appendChild(span);
     box.appendChild(div);
@@ -2064,6 +2619,7 @@ function save() {
 }
 
 function migrateSave(g) {
+  if (!g.lang) g.lang = "en";
   if (!Array.isArray(g.questLog)) {
     g.questLog = g.quest ? [{ text: g.quest.text, done: false }] : [];
   }
@@ -2098,7 +2654,7 @@ function exportSave() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (e) {
-    alert("Impossible d'exporter la sauvegarde.");
+    alert(T("exportErr"));
   }
 }
 
@@ -2109,18 +2665,20 @@ function importSave(file) {
       const parsed = JSON.parse(reader.result);
       if (parsed && parsed.version === VERSION && parsed.name && parsed.stats) {
         game = migrateSave(parsed);
+        lang = game.lang || "en";
         save();
         document.getElementById("topTitle").textContent = "Questing Simulator";
         document.getElementById("charCreation").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
         rebuildLogFromSave();
+        applyStaticText();
         render();
-        log("system", "Sauvegarde importée. Bon retour, " + game.name + " !");
+        log("system", fmt(T("importOk"), { n: game.name }));
       } else {
-        alert("Sauvegarde invalide ou version incompatible.");
+        alert(T("importBad"));
       }
     } catch (e) {
-      alert("Impossible de lire la sauvegarde.");
+      alert(T("importErr"));
     }
   };
   reader.readAsText(file);
@@ -2133,11 +2691,13 @@ function load() {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.version === VERSION && parsed.name) {
         game = migrateSave(parsed);
+        lang = game.lang || "en";
         rebuildLogFromSave();
-        log("system", "Aventure chargée. Bon retour, " + game.name + " !");
+        log("system", fmt(T("loadOk"), { n: game.name }));
         document.getElementById("topTitle").textContent = "Questing Simulator";
         document.getElementById("charCreation").style.display = "none";
         document.getElementById("gameUI").style.display = "block";
+        applyStaticText();
         return true;
       }
     }
@@ -2182,31 +2742,35 @@ function resetToCreation() {
   creation.cls = pick(CLASSES);
   document.getElementById("nameInput").value = creation.name;
   document.getElementById("nameWarn").textContent = "";
-  document.getElementById("topTitle").textContent = "Questing Simulator — Création de personnage";
+  document.getElementById("topTitle").textContent = T("topTitle");
   document.getElementById("gameUI").style.display = "none";
   document.getElementById("charCreation").style.display = "block";
   renderCreation();
 }
 
 document.getElementById("btnNew").addEventListener("click", function () {
-  if (!confirm("Recommencer une toute nouvelle aventure ? Votre progression actuelle sera écrasée.")) return;
+  if (!confirm(T("confirmNew"))) return;
   resetToCreation();
 });
 
 document.getElementById("btnSave").addEventListener("click", function () {
   if (!game) return;
   save();
-  log("system", "Partie sauvegardée manuellement.");
+  log("system", T("savedManual"));
 });
 
 document.getElementById("btnExport").addEventListener("click", function () {
   exportSave();
-  if (game) log("system", "Sauvegarde exportée dans un fichier.");
+  if (game) log("system", T("exported"));
 });
 
 document.getElementById("btnImport").addEventListener("click", function () {
-  if (game && !confirm("Importer une sauvegarde écrasera votre partie actuelle. Continuer ?")) return;
+  if (game && !confirm(T("confirmImport"))) return;
   document.getElementById("importFile").click();
+});
+
+document.getElementById("langBtn").addEventListener("click", function () {
+  setLanguage(lang === "en" ? "fr" : "en");
 });
 
 document.getElementById("importFile").addEventListener("change", function (e) {
@@ -2243,6 +2807,7 @@ renderCreation();
 if (!load()) {
   document.getElementById("charCreation").style.display = "block";
 }
+applyStaticText();
 render();
 updateClock();
 </script>
