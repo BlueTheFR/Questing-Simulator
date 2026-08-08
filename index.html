@@ -256,7 +256,7 @@
       <div class="prog-label"><span>Expérience</span><span class="dim" id="xpText">0 / 0</span></div>
       <div class="segbar big" id="xpBar"></div>
 
-      <div class="prog-label"><span>Météo : <span id="weatherText">...</span></span><span class="dim" id="zoneText">...</span></div>
+      <div class="prog-label"><span>Zone</span><span class="dim" id="zoneText">...</span></div>
     </div>
 
     <div class="grid">
@@ -509,7 +509,44 @@ const MONSTERS = [
   { name: "Ninja",              lvl: 4,  gold: [5,9] },
   { name: "Lémure",             lvl: 2,  gold: [2,4] },
   { name: "Vrock",              lvl: 10, gold: [22,40] },
-  { name: "Elan domestiqué",    lvl: 3,  gold: [3,6] }
+  { name: "Elan domestiqué",    lvl: 3,  gold: [3,6] },
+  { name: "Poule enragée",      lvl: 1,  gold: [1,2] },
+  { name: "Souris des champs",  lvl: 1,  gold: [1,2] },
+  { name: "Canard colérique",   lvl: 2,  gold: [1,3] },
+  { name: "Raton voleur",       lvl: 2,  gold: [2,4] },
+  { name: "Écureuil géant",     lvl: 3,  gold: [2,4] },
+  { name: "Chauve-souris vampirette", lvl: 3, gold: [3,5] },
+  { name: "Kobold",             lvl: 4,  gold: [4,7] },
+  { name: "Homme-lézard",       lvl: 4,  gold: [4,8] },
+  { name: "Harpie",             lvl: 5,  gold: [6,12] },
+  { name: "Scorpion des sables", lvl: 5, gold: [6,11] },
+  { name: "Gnoll",              lvl: 5,  gold: [6,12] },
+  { name: "Cultiste",           lvl: 6,  gold: [8,14] },
+  { name: "Minotaure",          lvl: 6,  gold: [9,16] },
+  { name: "Esprit frappeur",    lvl: 7,  gold: [10,18] },
+  { name: "Araignée géante",    lvl: 7,  gold: [11,20] },
+  { name: "Ours-garou",         lvl: 8,  gold: [14,26] },
+  { name: "Spectre",            lvl: 8,  gold: [14,26] },
+  { name: "Méduse",             lvl: 8,  gold: [15,28] },
+  { name: "Momie",              lvl: 9,  gold: [17,32] },
+  { name: "Géant des collines", lvl: 9,  gold: [18,34] },
+  { name: "Djinn mineur",       lvl: 10, gold: [23,42] },
+  { name: "Croco-mage",         lvl: 10, gold: [22,40] },
+  { name: "Wyverne",            lvl: 11, gold: [26,48] },
+  { name: "Golem d'argile",     lvl: 11, gold: [25,45] },
+  { name: "Vampire",            lvl: 12, gold: [30,55] },
+  { name: "Dévoreur des ombres", lvl: 12, gold: [30,52] },
+  { name: "Kraken juvénile",    lvl: 13, gold: [38,68] },
+  { name: "Balrog miniature",   lvl: 13, gold: [36,65] },
+  { name: "Hydre à deux têtes", lvl: 14, gold: [42,76] },
+  { name: "Chevalier de la mort", lvl: 14, gold: [44,78] },
+  { name: "Dragon des marais",  lvl: 15, gold: [50,90] },
+  { name: "Titan de glace",     lvl: 16, gold: [58,105] },
+  { name: "Archimage fou",      lvl: 16, gold: [60,108] },
+  { name: "Dragon royal",       lvl: 17, gold: [75,135] },
+  { name: "Cthulhien",          lvl: 17, gold: [70,125] },
+  { name: "Ascendant draconique", lvl: 18, gold: [90,160] },
+  { name: "Avatar du chaos",    lvl: 18, gold: [95,170] }
 ];
 
 const MONSTER_PLURALS = {
@@ -521,7 +558,24 @@ const MONSTER_PLURALS = {
   "Licorne sombre": "Licornes sombres", "Béhémoth": "Béhémoths", "Dragon ancien": "Dragons anciens",
   "Chèvre enragée": "Chèvres enragées", "Slime gluant": "Slimes gluants", "Gargouille": "Gargouilles",
   "Chimère": "Chimères", "Ninja": "Ninjas", "Lémure": "Lémures", "Vrock": "Vrocks",
-  "Elan domestiqué": "Élans domestiqués"
+  "Elan domestiqué": "Élans domestiqués",
+  "Poule enragée": "Poules enragées", "Souris des champs": "Souris des champs",
+  "Canard colérique": "Canards colériques", "Raton voleur": "Ratons voleurs",
+  "Écureuil géant": "Écureuils géants", "Chauve-souris vampirette": "Chauves-souris vampirettes",
+  "Kobold": "Kobolds", "Homme-lézard": "Hommes-lézards", "Harpie": "Harpies",
+  "Scorpion des sables": "Scorpions des sables", "Gnoll": "Gnolls", "Cultiste": "Cultistes",
+  "Minotaure": "Minotaures", "Esprit frappeur": "Esprits frappeurs",
+  "Araignée géante": "Araignées géantes", "Ours-garou": "Ours-garous",
+  "Spectre": "Spectres", "Méduse": "Méduses", "Momie": "Momies",
+  "Géant des collines": "Géants des collines", "Djinn mineur": "Djinns mineurs",
+  "Croco-mage": "Croco-mages", "Wyverne": "Wyvernes", "Golem d'argile": "Golems d'argile",
+  "Vampire": "Vampires", "Dévoreur des ombres": "Dévoreurs des ombres",
+  "Kraken juvénile": "Krakens juvéniles", "Balrog miniature": "Balrogs miniatures",
+  "Hydre à deux têtes": "Hydres à deux têtes", "Chevalier de la mort": "Chevaliers de la mort",
+  "Dragon des marais": "Dragons des marais", "Titan de glace": "Titans de glace",
+  "Archimage fou": "Archimages fous", "Dragon royal": "Dragons royaux",
+  "Cthulhien": "Cthulhiens", "Ascendant draconique": "Ascendants draconiques",
+  "Avatar du chaos": "Avatars du chaos"
 };
 
 function monsterPlural(name) { return MONSTER_PLURALS[name] || name + "s"; }
@@ -531,24 +585,15 @@ const MONSTERS_BY_NAME = {};
 MONSTERS.forEach(function (m) { MONSTERS_BY_NAME[m.name] = m; });
 
 const ZONES = [
-  { act: 1, name: "Les Champs du Début",       monsters: ["Rat géant", "Chauve-souris", "Gobelin", "Chèvre enragée", "Slime gluant", "Lémure"] },
-  { act: 2, name: "La Forêt Sombre",           monsters: ["Squelette", "Araignée des cavernes", "Zombie", "Elan domestiqué", "Ninja"] },
-  { act: 3, name: "Les Cavernes Grondantes",   monsters: ["Orc", "Loup", "Serpent venimeux", "Bandit"] },
-  { act: 4, name: "Le Marais Putride",         monsters: ["Goule", "Ogre", "Gargouille"] },
-  { act: 5, name: "La Montagne des Crânes",    monsters: ["Troll", "Golem de pierre", "Mage noir", "Vrock"] },
-  { act: 6, name: "Les Terres Arides",         monsters: ["Dragonnet", "Géant"] },
-  { act: 7, name: "Le Col des Lamentations",   monsters: ["Licorne sombre", "Chimère"] },
-  { act: 8, name: "Les Ruines du Serment",     monsters: ["Béhémoth"] },
-  { act: 9, name: "Le Repaire des Anciens",    monsters: ["Dragon ancien"] }
-];
-
-const WEATHERS = [
-  { id: "sun",    label: "Beau temps", power: 1.05, dur: 0.9 },
-  { id: "clouds", label: "Nuageux",    power: 1.0,  dur: 1.0 },
-  { id: "wind",   label: "Vent fort",  power: 1.03, dur: 0.95 },
-  { id: "rain",   label: "Pluie",      power: 0.95, dur: 1.08 },
-  { id: "fog",    label: "Brouillard", power: 0.92, dur: 1.15 },
-  { id: "storm",  label: "Orage",      power: 0.9,  dur: 1.25 }
+  { act: 1, name: "Les Champs du Début",       monsters: ["Rat géant", "Chauve-souris", "Gobelin", "Chèvre enragée", "Slime gluant", "Lémure", "Poule enragée", "Souris des champs", "Canard colérique", "Raton voleur"] },
+  { act: 2, name: "La Forêt Sombre",           monsters: ["Squelette", "Araignée des cavernes", "Zombie", "Elan domestiqué", "Ninja", "Écureuil géant", "Chauve-souris vampirette", "Kobold", "Homme-lézard"] },
+  { act: 3, name: "Les Cavernes Grondantes",   monsters: ["Orc", "Loup", "Serpent venimeux", "Bandit", "Harpie", "Scorpion des sables", "Gnoll", "Cultiste", "Minotaure"] },
+  { act: 4, name: "Le Marais Putride",         monsters: ["Goule", "Ogre", "Gargouille", "Esprit frappeur", "Araignée géante", "Ours-garou", "Spectre", "Méduse"] },
+  { act: 5, name: "La Montagne des Crânes",    monsters: ["Troll", "Golem de pierre", "Mage noir", "Vrock", "Momie", "Géant des collines", "Djinn mineur", "Croco-mage"] },
+  { act: 6, name: "Les Terres Arides",         monsters: ["Dragonnet", "Géant", "Wyverne", "Golem d'argile", "Vampire", "Dévoreur des ombres"] },
+  { act: 7, name: "Le Col des Lamentations",   monsters: ["Licorne sombre", "Chimère", "Kraken juvénile", "Balrog miniature", "Hydre à deux têtes", "Chevalier de la mort"] },
+  { act: 8, name: "Les Ruines du Serment",     monsters: ["Béhémoth", "Dragon des marais", "Titan de glace", "Archimage fou"] },
+  { act: 9, name: "Le Repaire des Anciens",    monsters: ["Dragon ancien", "Dragon royal", "Cthulhien", "Ascendant draconique", "Avatar du chaos"] }
 ];
 
 const EVENTS = [
@@ -621,11 +666,85 @@ const EQUIP_BASES = [
   { slot: "amule",  base: "Bretelle",            dmg: [0,1],  armor: [0,1] },
   { slot: "amule",  base: "Médaille du troisième", dmg: [0,1], armor: [0,1] },
   { slot: "amule",  base: "Collier de pâtes",    dmg: [0,1],  armor: [0,1] },
-  { slot: "amule",  base: "Pendule du jardinier", dmg: [0,2], armor: [0,1] }
+  { slot: "amule",  base: "Pendule du jardinier", dmg: [0,2], armor: [0,1] },
+  { slot: "arme",   base: "Branche d'arbre",       dmg: [1,4],  armor: [0,0] },
+  { slot: "arme",   base: "Ceinture cloutée",      dmg: [2,5],  armor: [0,0] },
+  { slot: "arme",   base: "Couteau à huîtres",     dmg: [1,3],  armor: [0,0] },
+  { slot: "arme",   base: "Manche de pioche",      dmg: [2,6],  armor: [0,0] },
+  { slot: "arme",   base: "Tuyau en plomb",        dmg: [3,7],  armor: [0,0] },
+  { slot: "arme",   base: "Fouet à poney",         dmg: [2,5],  armor: [0,0] },
+  { slot: "arme",   base: "Fourchette géante",     dmg: [3,6],  armor: [0,0] },
+  { slot: "arme",   base: "Bâton de pêche au gros", dmg: [2,5], armor: [0,0] },
+  { slot: "arme",   base: "Louche du chef (avec couvercle)", dmg: [2,4], armor: [0,0] },
+  { slot: "arme",   base: "Lance à lancer (jamais revue)", dmg: [3,6], armor: [0,0] },
+  { slot: "arme",   base: "Épée-broche de barbecue", dmg: [3,8], armor: [0,0] },
+  { slot: "arme",   base: "Hache de pompier (kermesse)", dmg: [2,5], armor: [0,0] },
+  { slot: "arme",   base: "Parapluie-canne de détective", dmg: [2,5], armor: [0,0] },
+  { slot: "arme",   base: "Guitare électrique (armes à 6 cordes)", dmg: [3,6], armor: [0,0] },
+  { slot: "arme",   base: "Clavier de PC blindé",  dmg: [2,5],  armor: [0,0] },
+  { slot: "tete",   base: "Cagoule de laine (avare)", dmg: [0,0], armor: [1,3] },
+  { slot: "tete",   base: "Casque de chantier rouge", dmg: [0,0], armor: [2,5] },
+  { slot: "tete",   base: "Couronne de laurier (du poulailler)", dmg: [0,0], armor: [1,3] },
+  { slot: "tete",   base: "Casque moto du laitier", dmg: [0,0], armor: [2,6] },
+  { slot: "tete",   base: "Chapeau de pêcheur à crevettes", dmg: [0,0], armor: [1,4] },
+  { slot: "tete",   base: "Bonnet du grand-père (sûr)", dmg: [0,0], armor: [1,3] },
+  { slot: "tete",   base: "Bandeau ninja (à la mode)", dmg: [0,0], armor: [1,2] },
+  { slot: "tete",   base: "Chapeau de sorcier en papier", dmg: [0,0], armor: [1,4] },
+  { slot: "torse",  base: "Blouson de cuir (grinçant)", dmg: [0,0], armor: [2,6] },
+  { slot: "torse",  base: "Veste matelassée",      dmg: [0,0],  armor: [2,5] },
+  { slot: "torse",  base: "Pull de Noël à renne",  dmg: [0,0],  armor: [1,4] },
+  { slot: "torse",  base: "Armure de plate de poupée", dmg: [0,0], armor: [2,4] },
+  { slot: "torse",  base: "Gilet pare-balles (bébé)", dmg: [0,0], armor: [3,7] },
+  { slot: "torse",  base: "Tablier de boucher",    dmg: [0,0],  armor: [2,6] },
+  { slot: "torse",  base: "Cotte de maille (en porte-clés)", dmg: [0,0], armor: [2,6] },
+  { slot: "torse",  base: "Doublure du dragon (vraie ?)", dmg: [0,0], armor: [3,8] },
+  { slot: "jambes", base: "Pantalon de survêt de compète", dmg: [0,0], armor: [2,5] },
+  { slot: "jambes", base: "Bas de pyjama étoilé",  dmg: [0,0],  armor: [1,3] },
+  { slot: "jambes", base: "Culotte de chasseur (à carreaux)", dmg: [0,0], armor: [2,5] },
+  { slot: "jambes", base: "Jean délavé de bûcheron", dmg: [0,0], armor: [2,6] },
+  { slot: "jambes", base: "Jupe-pantalon de l'aventurier", dmg: [0,0], armor: [2,4] },
+  { slot: "jambes", base: "Cargos à poches secrètes", dmg: [0,0], armor: [2,6] },
+  { slot: "jambes", base: "Jambières en botte de foin", dmg: [0,0], armor: [1,4] },
+  { slot: "pieds",  base: "Crocs de jardin (clog)", dmg: [0,0], armor: [1,3] },
+  { slot: "pieds",  base: "Baskets magiques (usées)", dmg: [0,0], armor: [1,4] },
+  { slot: "pieds",  base: "Bottes en caoutchouc de pêche", dmg: [0,0], armor: [2,5] },
+  { slot: "pieds",  base: "Chaussons de danse",    dmg: [0,0],  armor: [1,2] },
+  { slot: "pieds",  base: "Sandales de moine (rapiécées)", dmg: [0,0], armor: [1,3] },
+  { slot: "pieds",  base: "Godillots du voyageur", dmg: [0,0],  armor: [2,5] },
+  { slot: "pieds",  base: "Chaussures à ressorts", dmg: [0,0],  armor: [1,4] },
+  { slot: "pieds",  base: "Socquettes renforcées", dmg: [0,0],  armor: [1,2] },
+  { slot: "mains",  base: "Gants de boxe (pour câlins)", dmg: [0,0], armor: [1,4] },
+  { slot: "mains",  base: "Mitaines du bûcheron",  dmg: [0,0],  armor: [1,4] },
+  { slot: "mains",  base: "Gants du plombier",     dmg: [0,0],  armor: [1,3] },
+  { slot: "mains",  base: "Moufles de laveur de vitres", dmg: [0,0], armor: [1,3] },
+  { slot: "mains",  base: "Gants à griffes de chat", dmg: [0,0], armor: [1,4] },
+  { slot: "mains",  base: "Gants de gardien (rayés)", dmg: [0,0], armor: [1,3] },
+  { slot: "anneau", base: "Anneau de la tasse à café", dmg: [0,2], armor: [0,1] },
+  { slot: "anneau", base: "Bague de fiançailles (à un autre)", dmg: [0,2], armor: [0,0] },
+  { slot: "anneau", base: "Anneau en bonbon",      dmg: [0,1],  armor: [0,0] },
+  { slot: "anneau", base: "Bague du cracker de Noël", dmg: [0,2], armor: [0,0] },
+  { slot: "anneau", base: "Anneau de la clé des champs", dmg: [0,1], armor: [0,1] },
+  { slot: "amule",  base: "Pendentif de compas cassé", dmg: [0,2], armor: [0,0] },
+  { slot: "amule",  base: "Amulette de la rondelle", dmg: [0,1], armor: [0,1] },
+  { slot: "amule",  base: "Médaille du jardinage", dmg: [0,2],  armor: [0,0] },
+  { slot: "amule",  base: "Sifflet d'arbitre",     dmg: [0,1],  armor: [0,0] },
+  { slot: "amule",  base: "Amulette du dernier sandwich", dmg: [0,2], armor: [0,1] }
 ];
 
 const ADJ1 = ["Émoussé", "Corrodé", "Terne", "Poussiéreux", "Moite", "Luisant", "Éclatant", "Délavé", "Dentelé", "Sacré", "Maudit", "Chaud", "Aiguisé", "Rouillé", "Propre (rare)"];
 const ADJ2 = ["Fade", "Déchiré", "Plissé", "Rembourré", "Troué", "Réfléchissant", "Élastique", "Givré", "Piquant", "Bariolé", "Sournois", "Géant", "Mini", "Volant"];
+
+const EQUIP_MUTATIONS = [
+  { name: "mutant",         mult: 1.3,  color: "#2e8b57" },
+  { name: "augmenté",       mult: 1.45, color: "#ff8c00" },
+  { name: "hybride",        mult: 1.4,  color: "#008080" },
+  { name: "corrompu",       mult: 1.55, color: "#800080" },
+  { name: "évolué",         mult: 1.6,  color: "#1e90ff" },
+  { name: "surexposé",      mult: 1.7,  color: "#ff4500" },
+  { name: "béni",           mult: 1.65, color: "#daa520" },
+  { name: "chaotique",      mult: 1.5,  color: "#ff00ff" },
+  { name: "primordial",     mult: 1.9,  color: "#9400d3" }
+];
 
 const JUNK = [
   "un portefeuille de rate", "un bec d'autruche", "un échantillon de slime vert",
@@ -855,9 +974,9 @@ function newGame() {
     questsDone: 0,
     itemsFound: 0,
     treasures: 0,
-    weatherId: "sun",
-    weatherTimer: 300,
     pendingEvent: null,
+    currentAct: 1,
+    questZone: 0,
     totalTime: 0,
     quest: null,
     questLog: [],
@@ -901,6 +1020,12 @@ const QUEST_TYPE_LABELS = { deliver: "Livraison", exterminate: "Extermination", 
 const QUEST_TYPE_XP = { deliver: 1, exterminate: 1.5, fetch: 1.25, seek: 0.75 };
 
 function startQuest() {
+  if (currentAct() >= 10) {
+    const prev = game.questZone;
+    do {
+      game.questZone = Math.floor(Math.random() * ZONES.length);
+    } while (ZONES.length > 1 && game.questZone === prev);
+  }
   const type = pick(QUEST_TYPES);
   const q = {
     type: type,
@@ -1092,15 +1217,12 @@ function tick() {
   if (!game) return;
   game.totalTime += 1;
 
-  game.weatherTimer -= 1;
-  if (game.weatherTimer <= 0) {
-    const old = game.weatherId;
-    game.weatherId = pick(WEATHERS).id;
-    if (game.weatherId !== old) {
-      const w = WEATHERS.filter(function (x) { return x.id === game.weatherId; })[0];
-      log("system", "La météo change : " + w.label + ".");
+  const act = currentAct();
+  if (act > game.currentAct) {
+    for (let a = game.currentAct; a < act; a++) {
+      log("system", "Acte " + a + " terminé — joué " + actHours(a) + " h !");
     }
-    game.weatherTimer = randBetween(300, 600);
+    game.currentAct = act;
   }
 
   game.actionTimer += 1;
@@ -1165,7 +1287,7 @@ function resolveAction() {
   if (!mons) { startNextAction(); return; }
 
   const mHp = 12 + mons.lvl * 7;
-  const chance = (heroPower() * weatherPower()) / (heroPower() + mHp * 0.8);
+  const chance = heroPower() / (heroPower() + mHp * 0.8);
   const heroWins = Math.random() < Math.max(0.08, Math.min(0.97, chance));
 
   if (heroWins) {
@@ -1225,12 +1347,34 @@ function makeShopItemForSlot(slot) {
   };
   item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
   item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * (0.8 + Math.random() * 0.9)));
-  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base;
+  applyMutation(item);
+  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base + (item.mutation ? " (" + item.mutation + ")" : "");
   return item;
 }
 
-function currentAct() {
-  const hours = game.totalTime / 3600;
+function applyMutation(item) {
+  if (Math.random() >= 0.2) return;
+  const m = pick(EQUIP_MUTATIONS);
+  item.mutation = m.name;
+  item.dmg = Math.max(1, Math.round(item.dmg * m.mult));
+  item.armor = Math.max(1, Math.round(item.armor * m.mult));
+}
+
+function mutationColor(mut) {
+  for (const m of EQUIP_MUTATIONS) {
+    if (m.name === mut) return m.color;
+  }
+  return "#0000ff";
+}
+
+function itemNameHtml(item) {
+  const base = esc(item.name);
+  if (!item.mutation) return base;
+  const plain = esc(item.name.replace(" (" + item.mutation + ")", ""));
+  return plain + ' <span style="color:' + mutationColor(item.mutation) + ';font-weight:bold;">(' + esc(item.mutation) + ")</span>";
+}
+
+function actFromHours(hours) {
   let done;
   if (hours < 100) {
     done = 0;
@@ -1241,18 +1385,8 @@ function currentAct() {
   return done + 1;
 }
 
-function weatherPower() {
-  for (const w of WEATHERS) {
-    if (w.id === game.weatherId) return w.power;
-  }
-  return 1;
-}
-
-function weatherDur() {
-  for (const w of WEATHERS) {
-    if (w.id === game.weatherId) return w.dur;
-  }
-  return 1;
+function currentAct() {
+  return actFromHours(game.totalTime / 3600);
 }
 
 function applyEvent(e) {
@@ -1299,7 +1433,7 @@ function applyEvent(e) {
 }
 
 function monsterPool() {
-  const idx = Math.min(ZONES.length - 1, currentAct() - 1);
+  const idx = currentZoneIndex();
   const zone = ZONES[idx];
   const cur = [];
   const past = [];
@@ -1318,14 +1452,14 @@ function monsterPool() {
 function startNextAction() {
   if (game.shopping) {
     game.actionMonster = null;
-    game.actionDuration = Math.max(1, Math.round(randBetween(MIN_ACTION, MAX_ACTION) * weatherDur()));
+    game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
     game.actionTimer = 0;
     game.actionText = "Se rend à la boutique...";
     return;
   }
   const mons = pick(monsterPool());
   game.actionMonster = mons;
-  game.actionDuration = Math.max(1, Math.round(randBetween(MIN_ACTION, MAX_ACTION) * weatherDur()));
+  game.actionDuration = randBetween(MIN_ACTION, MAX_ACTION);
   game.actionTimer = 0;
   game.actionText = pick(ACTION_VERBS) + " " + pick(ACTION_TARGETS) + "...";
 }
@@ -1333,7 +1467,10 @@ function startNextAction() {
 function article(name) {
   const fem = {
     "Araignée des cavernes": 1, "Chauve-souris": 1, "Licorne sombre": 1,
-    "Chèvre enragée": 1, "Chimère": 1, "Gargouille": 1, "Goule": 1
+    "Chèvre enragée": 1, "Chimère": 1, "Gargouille": 1, "Goule": 1,
+    "Poule enragée": 1, "Chauve-souris vampirette": 1, "Harpie": 1,
+    "Araignée géante": 1, "Méduse": 1, "Momie": 1, "Wyverne": 1,
+    "Hydre à deux têtes": 1
   };
   return fem[name] || /^[AEIOUYÀÉÊÎÔ]/.test(name) ? "une" : "un";
 }
@@ -1416,7 +1553,8 @@ function generateEquip(mLevel) {
   item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * mult));
   item.dmg += plus;
   item.armor += plus;
-  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base + (plus > 0 ? " +" + plus : "");
+  applyMutation(item);
+  item.name = pick(ADJ1) + " " + pick(ADJ2) + " " + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " (" + item.mutation + ")" : "");
   game.gearPlus[t.base] = plus + 1;
   return item;
 }
@@ -1457,7 +1595,7 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 
 function log(type, text) {
   game.log.push({ type: type, text: text });
-  if (game.log.length > 300) game.log.splice(0, game.log.length - 300);
+  if (game.log.length > 50) game.log.splice(0, game.log.length - 50);
   appendLogLine(type, text);
 }
 
@@ -1468,7 +1606,7 @@ function appendLogLine(type, text) {
   p.className = "log-" + type;
   p.textContent = "[" + fmtTime(game.totalTime) + "] " + text;
   el.appendChild(p);
-  while (el.children.length > 200) el.removeChild(el.firstChild);
+  while (el.children.length > 50) el.removeChild(el.firstChild);
   el.scrollTop = el.scrollHeight;
 }
 
@@ -1540,9 +1678,6 @@ function render() {
   document.getElementById("statTreasures").textContent = g.treasures;
   document.getElementById("statTime").textContent = fmtTime(g.totalTime);
 
-  const w = WEATHERS.filter(function (x) { return x.id === g.weatherId; })[0] || WEATHERS[0];
-  const wpct = Math.round((w.power - 1) * 100);
-  document.getElementById("weatherText").textContent = w.label + (wpct ? " (" + (wpct > 0 ? "+" : "") + wpct + " %)" : "");
   document.getElementById("zoneText").textContent = zoneName();
 
   let st;
@@ -1602,9 +1737,16 @@ function renderSpells() {
   });
 }
 
+function currentZoneIndex() {
+  const act = currentAct();
+  if (act >= 10) {
+    return game.questZone != null ? game.questZone : Math.floor(Math.random() * ZONES.length);
+  }
+  return Math.min(ZONES.length - 1, act - 1);
+}
+
 function zoneName() {
-  const idx = Math.min(ZONES.length - 1, currentAct() - 1);
-  return ZONES[idx].name;
+  return ZONES[currentZoneIndex()].name;
 }
 
 function renderInventory() {
@@ -1626,7 +1768,7 @@ function renderInventory() {
         ? "Objet unique"
         : SLOT_LABELS[it.slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "");
     div.innerHTML =
-      '<div class="iname">' + esc(it.name) + "</div>" +
+      '<div class="iname">' + itemNameHtml(it) + "</div>" +
       '<div class="isub">' + sub + "</div>";
     box.appendChild(div);
   });
@@ -1643,7 +1785,7 @@ function renderEquipment() {
     if (it) {
       any = true;
       div.innerHTML =
-        '<div class="iname">' + esc(it.name) + "</div>" +
+        '<div class="iname">' + itemNameHtml(it) + "</div>" +
         '<div class="isub">' + SLOT_LABELS[slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "") + "</div>";
     } else {
       div.innerHTML = '<div class="isub">' + SLOT_LABELS[slot] + " : vide</div>";
@@ -1721,11 +1863,11 @@ function migrateSave(g) {
   if (!g.gearPlus) g.gearPlus = {};
   if (g.gearLvl == null) g.gearLvl = 0;
   if (g.treasures == null) g.treasures = 0;
-  if (!g.weatherId) g.weatherId = "sun";
-  if (g.weatherTimer == null) g.weatherTimer = 300;
   if (g.shopping == null) g.shopping = false;
   if (g.pendingEvent == null) g.pendingEvent = null;
   if (typeof g.gold === "number") g.gold = Math.round(g.gold);
+  if (g.currentAct == null) g.currentAct = actFromHours((g.totalTime || 0) / 3600);
+  if (g.questZone == null) g.questZone = Math.min(ZONES.length - 1, actFromHours((g.totalTime || 0) / 3600) - 1);
   if (g.mp == null) g.mp = 20 + (g.stats ? g.stats.wis * 4 : 20);
   if (g.quest && !g.quest.need) {
     g.quest.need = randBetween(10, 25);
@@ -1797,7 +1939,7 @@ function load() {
 function rebuildLogFromSave() {
   const el = document.getElementById("log");
   el.innerHTML = "";
-  game.log.slice(-200).forEach(function (l) {
+  game.log.slice(-50).forEach(function (l) {
     const p = document.createElement("p");
     p.className = "log-" + l.type;
     p.textContent = "[" + fmtTime(game.totalTime) + "] " + l.text;
