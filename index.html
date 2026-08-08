@@ -2256,7 +2256,9 @@ function checkLevelUp() {
 }
 
 function xpNeeded(lvl) {
-  return Math.floor(80 * lvl * lvl * lvl);
+  const base = 80 * lvl * lvl * lvl;
+  if (lvl >= 10) return Math.floor(base);
+  return Math.floor(base * (0.3 + 0.07 * lvl));
 }
 
 function titleForLevel(lvl) {
