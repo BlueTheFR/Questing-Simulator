@@ -1386,6 +1386,7 @@ function makeShopItemForSlot(slot) {
   item.hp = slotHp(item.slot, lvl);
   item.mp = slotMp(item.slot, lvl);
   if (item.slot !== "arme") item.dmg = 0;
+  if (item.slot === "arme") item.armor = 0;
   applyMutation(item);
   item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (item.mutation ? " " + item.mutation : "");
   return item;
@@ -1629,6 +1630,7 @@ function generateEquip(mLevel) {
   item.dmg += plus;
   item.armor += plus;
   if (item.slot !== "arme") item.dmg = 0;
+  if (item.slot === "arme") item.armor = 0;
   applyMutation(item);
   item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " " + item.mutation : "");
   game.gearPlus[t.base] = plus + 1;
