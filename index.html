@@ -360,7 +360,7 @@ const STRINGS = {
     gSpells: "Sorts connus", gQuest: "Quête actuelle", gLog: "Journal d'aventure",
     gPlot: "Développement de l'intrigue", gEquip: "Équipement", gInv: "Inventaire",
     exploring: "en exploration...", toShop: "Se rend à la boutique...",
-    shopDesc: "Le héros va vendre ses trouvailles et acheter de meilleures pièces.",
+    shopDesc: "{ref} va vendre ses trouvailles et acheter de meilleures pièces.",
     zone: "Zone : {z}", reward: "Récompense : ~{x} XP, ~{g} or + bonus aléatoire",
     noSpells: "Aucun sort pour l'instant.", foreign: "étranger",
     noInv: "Aucun objet en réserve.", absurd: "Objet absurde", unique: "Objet unique",
@@ -449,7 +449,7 @@ const STRINGS = {
     gSpells: "Known spells", gQuest: "Current quest", gLog: "Adventure log",
     gPlot: "Plot development", gEquip: "Equipment", gInv: "Inventory",
     exploring: "exploring...", toShop: "Heading to the shop...",
-    shopDesc: "The hero is going to sell the finds and buy better gear.",
+    shopDesc: "{ref} is going to sell the finds and buy better gear.",
     zone: "Zone: {z}", reward: "Reward: ~{x} XP, ~{g} gold + random bonus",
     noSpells: "No spells yet.", foreign: "foreign",
     noInv: "No items in reserve.", absurd: "Absurd item", unique: "Unique item",
@@ -808,7 +808,7 @@ const TR_EN = {
   "Cueille des baies sauvages": "Forage for wild berries", "Débusque un piège sur le sentier": "Spot a trap on the trail",
   "Fouille un monceau de décombres": "Dig through a pile of rubble",
   "Trans-kobold": "Trans-kobold", "Loup-garou femelle": "Female werewolf", "Aenigma": "Aenigma",
-  "Kobold": "Kobold", "Nain": "Dwarf", "Elfe sombre": "Dark elf", "Demi-orque": "Half-orc",
+  "Sirène": "Mermaid", "Nain": "Dwarf", "Elfe sombre": "Dark elf", "Demi-orque": "Half-orc",
   "Halfelin": "Halfling", "Gobelin": "Goblin", "Gnome": "Gnome", "Homme-rat": "Rat-man",
   "Citrouille": "Pumpkin", "Tortue": "Turtle", "Français": "French", "Wallaby": "Wallaby", "Morveux": "Snotling",
   "Combattant": "Fighter", "Barbare": "Barbarian", "Berserker": "Berserker", "Paladin": "Paladin",
@@ -831,10 +831,10 @@ const AVG_TOTAL = 63; // moyenne de 6 × 3d6 (6 × 10,5)
    ============================================================ */
 
 const RACES = [
-  { name: "Trans-kobold",      gender: "m", bonus: { str: 0,  con: -1, dex: 2,  int: 1,  wis: 0,  cha: 0 }, desc: "Kobold, enfin la bonne enveloppe.", descEn: "A kobold, finally in the right body." },
+  { name: "Trans-kobold",      gender: "f", bonus: { str: 0,  con: -1, dex: 2,  int: 1,  wis: 0,  cha: 0 }, desc: "Kobold, enfin la bonne enveloppe.", descEn: "A kobold, finally in the right body." },
   { name: "Loup-garou femelle", gender: "f", bonus: { str: 2,  con: 0,  dex: 1,  int: 0,  wis: 0,  cha: 0 }, desc: "Griffe et hurle, surtout à la pleine lune.", descEn: "Claws and howls, especially at full moon." },
   { name: "Aenigma",           gender: "m", bonus: { str: 0,  con: -1, dex: 0,  int: 3,  wis: 0,  cha: 0 }, desc: "Personne ne sait ce que c'est. Eux non plus.", descEn: "Nobody knows what it is. Not even them." },
-  { name: "Kobold",            gender: "m", bonus: { str: -1, con: 0,  dex: 1,  int: 1,  wis: 0,  cha: 0 }, desc: "Petit, sournois, et toujours trop nombreux.", descEn: "Small, sneaky, and always too numerous." },
+  { name: "Sirène",            gender: "f", bonus: { str: -1, con: 0,  dex: 1,  int: 1,  wis: 0,  cha: 1 }, desc: "Chante faux mais charme quand même.", descEn: "Sings off-key but charms anyway." },
   { name: "Nain",              gender: "m", bonus: { str: 2,  con: 2,  dex: -1, int: 0,  wis: 0,  cha: 0 }, desc: "Barbe, bière et pioche.", descEn: "Beard, beer and pickaxe." },
   { name: "Elfe sombre",       gender: "m", bonus: { str: 0,  con: -1, dex: 1,  int: 2,  wis: 0,  cha: 0 }, desc: "Sombres, pas forcément méchants. Souvent.", descEn: "Dark, not necessarily evil. Often." },
   { name: "Demi-orque",        gender: "m", bonus: { str: 3,  con: 1,  dex: 0,  int: -2, wis: 0,  cha: -1 }, desc: "La moitié qui tape le plus fort.", descEn: "The half that hits hardest." },
@@ -2457,7 +2457,7 @@ function renderQuest() {
     const d = document.createElement("div");
     d.className = "quest-box";
     d.innerHTML = '<div class="quest-name">' + esc(T("toShop")) + '</div>' +
-      '<div class="quest-desc">' + esc(T("shopDesc")) + '</div>';
+      '<div class="quest-desc">' + esc(fmt(T("shopDesc"), { ref: heroRef() })) + '</div>';
     box.appendChild(d);
     return;
   }
