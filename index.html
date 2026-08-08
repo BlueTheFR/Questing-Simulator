@@ -1834,7 +1834,7 @@ function renderPlot() {
     cb.checked = i <= done;
     cb.disabled = true;
     const span = document.createElement("span");
-    span.textContent = i <= done ? "Acte " + i + " — terminé" : "Acte " + i + " — en cours";
+    span.textContent = i <= done ? "Acte " + i + " — terminé (" + actHours(i) + " h)" : "Acte " + i + " — en cours";
     div.appendChild(cb);
     div.appendChild(span);
     box.appendChild(div);
