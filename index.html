@@ -220,6 +220,7 @@
             <span>Total: <span id="statTotal" class="tot-val tot-normal">0</span>
               <span class="tot-hint" id="totHint">(average: 63)</span></span>
             <button class="winbtn" id="rollAllBtn">3d6&nbsp;Reroll all</button>
+            <button class="winbtn" id="unrollBtn">Unroll</button>
           </div>
           <div class="tot-hint" id="statHint" style="margin-top:5px;">
             3d6 per stat + race and class bonuses · No cap: your stats rise without limit.
@@ -346,6 +347,7 @@ const STRINGS = {
     lblBaseStats: "Stats de base (3d6 chacune)",
     totalHint: "(moyenne : 63)",
     rollAllBtn: "3d6 Relancer tout",
+    unrollBtn: "Annuler le tirage",
     statHint: "3d6 par stat + bonus de race et de classe · Aucun plafond : vos stats montent sans limite.",
     startBtn: "Commencer l'aventure",
     loadLabel: "Génération de votre héros...",
@@ -435,6 +437,7 @@ const STRINGS = {
     lblBaseStats: "Base stats (3d6 each)",
     totalHint: "(average: 63)",
     rollAllBtn: "3d6 Reroll all",
+    unrollBtn: "Undo roll",
     statHint: "3d6 per stat + race and class bonuses · No cap: your stats rise without limit.",
     startBtn: "Begin the adventure",
     loadLabel: "Generating your hero...",
@@ -576,6 +579,7 @@ function applyStaticText() {
   set("randNameBtn", "randName"); set("lblHeroName", "lblHeroName"); set("lblRace", "lblRace");
   set("lblClass", "lblClass"); set("lblBaseStats", "lblBaseStats"); set("totHint", "totalHint");
   set("rollAllBtn", "rollAllBtn"); set("statHint", "statHint"); set("startBtn", "startBtn");
+  set("unrollBtn", "unrollBtn");
   set("statusText", "statusReady"); set("questPrefix", "questPrefix"); set("xpLabel", "xpLabel");
   set("zoneLabel", "zoneLabel"); set("loadLabel", "loadLabel"); set("gHeroTitle", "gHeroTitle"); set("hpLabel", "hpLabel");
   set("mpLabel", "mpLabel"); set("sLevel", "sLevel"); set("sStr", "sStr"); set("sCon", "sCon");
@@ -1307,7 +1311,8 @@ const creation = {
   name: "",
   race: null,
   cls: null,
-  base: { str: 0, con: 0, dex: 0, int: 0, wis: 0, cha: 0 }
+  base: { str: 0, con: 0, dex: 0, int: 0, wis: 0, cha: 0 },
+  prevBase: null
 };
 
 /* ============================================================
@@ -1321,7 +1326,15 @@ function roll3d6() {
 }
 
 function rollAllStats() {
+  creation.prevBase = Object.assign({}, creation.base);
   for (const k in creation.base) creation.base[k] = roll3d6();
+  renderCreation();
+}
+
+function unrollStats() {
+  if (!creation.prevBase) return;
+  creation.base = Object.assign({}, creation.prevBase);
+  creation.prevBase = null;
   renderCreation();
 }
 
@@ -1399,6 +1412,7 @@ function renderCreation() {
   if (creation.cls) classSel.value = CLASSES.indexOf(creation.cls);
   updateInfo();
   document.getElementById("startBtn").disabled = !(creation.name.trim() && creation.race && creation.cls);
+  document.getElementById("unrollBtn").disabled = !creation.prevBase;
 }
 
 function updateInfo() {
@@ -1434,6 +1448,10 @@ document.getElementById("randNameBtn").addEventListener("click", function () {
 
 document.getElementById("rollAllBtn").addEventListener("click", function () {
   rollAllStats();
+});
+
+document.getElementById("unrollBtn").addEventListener("click", function () {
+  unrollStats();
 });
 
 const LOAD_MSGS = [
