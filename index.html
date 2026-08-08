@@ -1191,9 +1191,10 @@ function heroPower() {
 }
 
 function weaponDamage() {
-  const eq = game.equipped.arme;
   let d = 2 + Math.floor(game.level * 1.5) + Math.floor(game.stats.str / 2);
-  if (eq) d += eq.dmg;
+  for (const k in game.equipped) {
+    if (game.equipped[k]) d += game.equipped[k].dmg;
+  }
   return d;
 }
 
@@ -1204,6 +1205,26 @@ function armorRating() {
   }
   return a + Math.floor(game.stats.con / 3);
 }
+
+function equipHpBonus() {
+  let h = 0;
+  for (const k in game.equipped) {
+    if (game.equipped[k]) h += game.equipped[k].hp || 0;
+  }
+  return h;
+}
+
+function equipMpBonus() {
+  let m = 0;
+  for (const k in game.equipped) {
+    if (game.equipped[k]) m += game.equipped[k].mp || 0;
+  }
+  return m;
+}
+
+function maxHpTotal() { return game.maxHp + equipHpBonus(); }
+
+function maxMpTotal() { return 20 + game.stats.wis * 4 + equipMpBonus(); }
 
 function checkSpellLearning() {
   const pool = SPELL_POOLS[game.class.archetype] || [];
@@ -1241,12 +1262,13 @@ function tick() {
 
   game.actionTimer += 1;
 
-  const maxMp = 20 + game.stats.wis * 4;
+  const maxMp = maxMpTotal();
   if (game.mp < maxMp) game.mp = Math.min(maxMp, game.mp + 5);
 
-  if (game.hp < game.maxHp && Math.random() < 0.3) {
-    const regen = Math.ceil(game.maxHp * 0.04) + Math.ceil(game.stats.con / 3);
-    game.hp = Math.min(game.maxHp, game.hp + regen);
+  const maxHp = maxHpTotal();
+  if (game.hp < maxHp && Math.random() < 0.3) {
+    const regen = Math.ceil(maxHp * 0.04) + Math.ceil(game.stats.con / 3);
+    game.hp = Math.min(maxHp, game.hp + regen);
   }
 
   applyPerSecondDamage();
@@ -1333,7 +1355,7 @@ function doShopping() {
   let bought = 0;
   for (const slot in SLOT_LABELS) {
     const item = makeShopItemForSlot(slot);
-    const price = Math.max(1, Math.round(Math.floor((item.dmg + item.armor) * 3 + item.level * 2) * discount));
+    const price = Math.max(1, Math.round(Math.floor((item.dmg + item.armor) * 3 + (item.hp + item.mp) * 2 + item.level * 2) * discount));
     if (game.gold >= price) {
       game.gold -= price;
       const old = game.equipped[slot];
@@ -1361,23 +1383,46 @@ function makeShopItemForSlot(slot) {
   };
   item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
   item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * (0.8 + Math.random() * 0.9)));
+  item.hp = slotHp(item.slot, lvl);
+  item.mp = slotMp(item.slot, lvl);
+  if (item.slot !== "arme") item.dmg = 0;
   applyMutation(item);
   item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (item.mutation ? " " + item.mutation : "");
   return item;
+}
+
+function slotHp(slot, lvl) {
+  const base = { tete: [8, 20], torse: [12, 30], jambes: [10, 24], pieds: [6, 16], mains: [6, 15] }[slot];
+  if (!base) return 0;
+  return Math.max(0, Math.round((randBetween(base[0], base[1]) + lvl * (0.8 + Math.random() * 0.6)) * (0.8 + Math.random() * 0.9)));
+}
+
+function slotMp(slot, lvl) {
+  const base = { anneau: [5, 12], amule: [6, 15] }[slot];
+  if (!base) return 0;
+  return Math.max(0, Math.round((randBetween(base[0], base[1]) + lvl * (0.3 + Math.random() * 0.4)) * (0.8 + Math.random() * 0.9)));
+}
+
+function multStat(item, k, mult) {
+  if (item[k]) item[k] = Math.max(1, Math.round(item[k] * mult));
 }
 
 function applyMutation(item) {
   if (Math.random() < 0.2) {
     const m = pick(EQUIP_MUTATIONS);
     item.mutation = m.name;
-    item.dmg = Math.max(1, Math.round(item.dmg * m.mult));
-    item.armor = Math.max(1, Math.round(item.armor * m.mult));
+    multStat(item, "dmg", m.mult);
+    multStat(item, "armor", m.mult);
+    multStat(item, "hp", m.mult);
+    multStat(item, "mp", m.mult);
   }
   if (Math.random() < 0.25) {
     const m = pick(MUTATION_ADJ);
     item.mutation2 = m.name;
-    item.dmg = Math.max(1, Math.round(item.dmg * m.mult));
-    item.armor = Math.max(1, Math.round(item.armor * m.mult));
+    multStat(item, "dmg", m.mult);
+    multStat(item, "armor", m.mult);
+    multStat(item, "hp", m.mult);
+    multStat(item, "mp", m.mult);
   }
 }
 
@@ -1510,7 +1555,7 @@ function checkLevelUp() {
     game.level += 1;
     STAT_ORDER.forEach(function (k) { game.stats[k] += 1; });
     game.maxHp += 15 + game.stats.con;
-    game.hp = game.maxHp;
+    game.hp = maxHpTotal();
     log("level", "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau " + game.level + " (+1 à tous les attributs).");
     log("system", "Nouveau titre : " + killTitle());
     checkSpellLearning();
@@ -1579,8 +1624,11 @@ function generateEquip(mLevel) {
   };
   item.dmg = Math.max(0, Math.round((randBetween(t.dmg[0], t.dmg[1]) + lvl * (0.5 + Math.random() * 0.6)) * mult));
   item.armor = Math.max(0, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * (0.4 + Math.random() * 0.5)) * mult));
+  item.hp = slotHp(item.slot, lvl);
+  item.mp = slotMp(item.slot, lvl);
   item.dmg += plus;
   item.armor += plus;
+  if (item.slot !== "arme") item.dmg = 0;
   applyMutation(item);
   item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " " + item.mutation : "");
   game.gearPlus[t.base] = plus + 1;
@@ -1591,7 +1639,7 @@ function autoEquip(item) {
   if (item.kind !== "equip") return false;
   const cur = game.equipped[item.slot];
   if (!cur) { game.equipped[item.slot] = item; return true; }
-  const score = function (i) { return i.dmg * 1.6 + i.armor; };
+  const score = function (i) { return i.dmg * 1.6 + i.armor + (i.hp || 0) + (i.mp || 0); };
   if (score(item) > score(cur) * 1.05) {
     const old = cur;
     game.equipped[item.slot] = item;
@@ -1603,7 +1651,7 @@ function autoEquip(item) {
 
 function sellPrice(it) {
   if (it.kind === "junk" || it.kind === "unique") return randBetween(5, 15);
-  return Math.max(1, Math.floor((it.dmg + it.armor) * 3 + it.level * 2));
+  return Math.max(1, Math.floor((it.dmg + it.armor) * 3 + ((it.hp || 0) + (it.mp || 0)) * 2 + it.level * 2));
 }
 
 function sellAllInventory() {
@@ -1687,8 +1735,8 @@ function render() {
   document.getElementById("xpText").textContent = g.xp + " / " + needed + " XP";
   renderSeg("xpBar", 10, g.xp / needed * 10);
 
-  document.getElementById("hpText").textContent = Math.max(0, Math.round(g.hp)) + " / " + g.maxHp;
-  document.getElementById("mpText").textContent = Math.round(g.mp) + " / " + (20 + g.stats.wis * 4);
+  document.getElementById("hpText").textContent = Math.max(0, Math.round(g.hp)) + " / " + maxHpTotal();
+  document.getElementById("mpText").textContent = Math.round(g.mp) + " / " + maxMpTotal();
 
   document.getElementById("statLevel").textContent = g.level;
   document.getElementById("statStr").textContent = g.stats.str;
@@ -1777,6 +1825,15 @@ function zoneName() {
   return ZONES[currentZoneIndex()].name;
 }
 
+function itemStatsText(it) {
+  const parts = [];
+  if (it.dmg) parts.push(it.dmg + " dégâts");
+  if (it.armor) parts.push(it.armor + " armure");
+  if (it.hp) parts.push(it.hp + " PV");
+  if (it.mp) parts.push(it.mp + " PM");
+  return parts.join(" · ");
+}
+
 function renderInventory() {
   const box = document.getElementById("inventory");
   box.innerHTML = "";
@@ -1794,7 +1851,7 @@ function renderInventory() {
       ? "Objet absurde"
       : it.kind === "unique"
         ? "Objet unique"
-        : SLOT_LABELS[it.slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "");
+        : SLOT_LABELS[it.slot] + (itemStatsText(it) ? " · " + itemStatsText(it) : "");
     div.innerHTML =
       '<div class="iname">' + itemNameHtml(it) + "</div>" +
       '<div class="isub">' + sub + "</div>";
@@ -1814,7 +1871,7 @@ function renderEquipment() {
       any = true;
       div.innerHTML =
         '<div class="iname">' + itemNameHtml(it) + "</div>" +
-        '<div class="isub">' + SLOT_LABELS[slot] + " · " + (it.dmg ? it.dmg + " dégâts" : "") + (it.dmg && it.armor ? " · " : "") + (it.armor ? it.armor + " armure" : "") + "</div>";
+        '<div class="isub">' + SLOT_LABELS[slot] + (itemStatsText(it) ? " · " + itemStatsText(it) : "") + "</div>";
     } else {
       div.innerHTML = '<div class="isub">' + SLOT_LABELS[slot] + " : vide</div>";
     }
