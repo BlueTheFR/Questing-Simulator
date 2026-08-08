@@ -281,6 +281,7 @@
             <div class="stat-row"><span class="label" id="sGold">Gold</span><span class="val gold" id="statGold">0</span></div>
             <div class="stat-row"><span class="label" id="sItems">Items found</span><span class="val" id="statItems">0</span></div>
             <div class="stat-row"><span class="label" id="sTreasures">Treasures</span><span class="val gold" id="statTreasures">0</span></div>
+            <div class="stat-row"><span class="label" id="sCombatsLost">Lost combats</span><span class="val" id="statCombatsLost">0</span></div>
           </div>
           <div class="stats-line"><span id="sTime">Play time: </span><span id="statTime">0s</span></div>
         </div>
@@ -358,6 +359,7 @@ const STRINGS = {
     sInt: "Intelligence (INT)", sWis: "Sagesse (SAG)", sCha: "Charisme (CHA)",
     sDmg: "Dégâts", sArmor: "Armure", sKills: "Kills", sQuests: "Quêtes finies",
     sGold: "Or", sItems: "Objets obtenus", sTreasures: "Trésors",
+    sCombatsLost: "Combats perdus",
     sTime: "Temps de partie : ",
     gSpells: "Sorts connus", gQuest: "Quête actuelle", gLog: "Journal d'aventure",
     gPlot: "Développement de l'intrigue", gEquip: "Équipement", gInv: "Inventaire",
@@ -448,6 +450,7 @@ const STRINGS = {
     sInt: "Intelligence (INT)", sWis: "Wisdom (WIS)", sCha: "Charisma (CHA)",
     sDmg: "Damage", sArmor: "Armor", sKills: "Kills", sQuests: "Quests done",
     sGold: "Gold", sItems: "Items found", sTreasures: "Treasures",
+    sCombatsLost: "Lost combats",
     sTime: "Play time: ",
     gSpells: "Known spells", gQuest: "Current quest", gLog: "Adventure log",
     gPlot: "Plot development", gEquip: "Equipment", gInv: "Inventory",
@@ -585,7 +588,7 @@ function applyStaticText() {
   set("mpLabel", "mpLabel"); set("sLevel", "sLevel"); set("sStr", "sStr"); set("sCon", "sCon");
   set("sDex", "sDex"); set("sInt", "sInt"); set("sWis", "sWis"); set("sCha", "sCha");
   set("sDmg", "sDmg"); set("sArmor", "sArmor"); set("sKills", "sKills"); set("sQuests", "sQuests");
-  set("sGold", "sGold"); set("sItems", "sItems"); set("sTreasures", "sTreasures"); set("sTime", "sTime");
+  set("sGold", "sGold"); set("sItems", "sItems"); set("sTreasures", "sTreasures"); set("sCombatsLost", "sCombatsLost"); set("sTime", "sTime");
   set("gSpells", "gSpells"); set("gQuest", "gQuest"); set("gLog", "gLog"); set("gPlot", "gPlot");
   set("gEquip", "gEquip"); set("gInv", "gInv");
   const pt = document.querySelector(".page-title");
@@ -1515,6 +1518,7 @@ function newGame() {
     questsDone: 0,
     itemsFound: 0,
     treasures: 0,
+    combatsLost: 0,
     pendingEvent: null,
     currentAct: 1,
     questZone: 0,
@@ -1957,6 +1961,7 @@ function resolveAction() {
     maybeDropItem(mons);
     checkLevelUp();
   } else {
+    game.combatsLost += 1;
     if (lang === "en") {
       log("combat", "The " + tr(mons.name) + " " + tr(pick(RETREAT_MSGS)));
     } else {
@@ -2448,6 +2453,7 @@ function render() {
   document.getElementById("statGold").textContent = formatGold(g.gold);
   document.getElementById("statItems").textContent = g.itemsFound;
   document.getElementById("statTreasures").textContent = g.treasures;
+  document.getElementById("statCombatsLost").textContent = g.combatsLost;
   document.getElementById("statTime").textContent = fmtTime(g.totalTime);
 
   document.getElementById("zoneText").textContent = zoneName();
@@ -2646,6 +2652,7 @@ function migrateSave(g) {
   if (!g.gearPlus) g.gearPlus = {};
   if (g.gearLvl == null) g.gearLvl = 0;
   if (g.treasures == null) g.treasures = 0;
+  if (g.combatsLost == null) g.combatsLost = 0;
   if (g.shopping == null) g.shopping = false;
   if (g.pendingEvent == null) g.pendingEvent = null;
   if (typeof g.gold === "number") g.gold = Math.round(g.gold);
