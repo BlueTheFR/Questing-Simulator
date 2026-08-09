@@ -1304,10 +1304,16 @@ const MIN_ACTION = 3;       // durée d'action minimale (s)
 const MAX_ACTION = 25;      // durée d'action maximale (s)
 const XP_K = 0.37;          // Gain XP « Progress Quest » : × niveau², coût 80×niveau³ → niveau 50 en ~1 mois
 const XP_CAP = 100;         // Niveau plafond : au-delà, besoin + gain d'XP constants (pas d'overflow)
+const GOLD_CAP = 999999;    // Plafond d'or : aucun gain ne dépasse ce montant
 const SAVE_KEY = "questingSimulatorWin95Save";
 const SAVE_INTERVAL = 30000; // 30 secondes
 const TICK_MS = 1000;
 const VERSION = 7;
+
+// Ajoute de l'or en restant plafonné à GOLD_CAP (999 999)
+function addGold(n) {
+  game.gold = Math.min(GOLD_CAP, game.gold + n);
+}
 
 let game = null;
 
@@ -1667,7 +1673,7 @@ function completeQuest() {
   const bonusXp = questXp(game.quest);
   const bonusGold = (isBoss ? 100 : 30) + game.level * (isBoss ? 24 : 12);
   game.xp += bonusXp;
-  game.gold += bonusGold;
+  addGold(bonusGold);
   game.treasures += 1;
   log("quest", fmt(T("questDone"), { t: questText(game.quest), x: bonusXp, g: bonusGold }));
   if (isBoss) {
@@ -1760,7 +1766,7 @@ function rewardSpell() {
     log("level", fmt(T("rewUp"), { n: tr(s.name), l: s.lvl }));
   } else {
     const goldGain = 40;
-    game.gold += goldGain;
+    addGold(goldGain);
     log("loot", fmt(T("rewGold"), { g: goldGain }));
   }
 }
@@ -1953,7 +1959,7 @@ function resolveAction() {
     const xpGain = Math.max(1, Math.round(XP_K * xpLevel() * xpLevel() * (0.8 + Math.random() * 0.6) * xpMultiplier()));
     const goldGain = randBetween(mons.gold[0], mons.gold[1]);
     game.xp += xpGain;
-    game.gold += goldGain;
+    addGold(goldGain);
     game.treasures += 1;
     game.kills += 1;
     game.killsByMonster[mons.name] = (game.killsByMonster[mons.name] || 0) + 1;
@@ -2097,7 +2103,7 @@ function currentAct() {
 function applyEvent(e) {
   if (e.kind === "gold") {
     const g = randBetween(e.gold[0], e.gold[1]);
-    game.gold += g;
+    addGold(g);
     game.treasures += 1;
     log("event", eventText(e) + " (+" + g + " " + (lang === "en" ? "gold" : "or") + ").");
   } else if (e.kind === "item") {
@@ -2130,7 +2136,7 @@ function applyEvent(e) {
     const x = Math.max(1, Math.round(XP_K * xpLevel() * xpLevel() * xpMultiplier()));
     const g = randBetween(10, 40);
     game.xp += x;
-    game.gold += g;
+    addGold(g);
     game.treasures += 1;
     log("event", eventText(e) + " " + fmt(T("mimicWin"), { ref: heroRef(), x: x, g: g }));
     checkLevelUp();
@@ -2170,7 +2176,7 @@ function pickWeighted(list) {
 function resolveExtraAction(id) {
   if (id === "forage") {
     const g = randBetween(2, 12) + Math.floor(game.level * 2);
-    game.gold += g;
+    addGold(g);
     game.quest.count += 1;
     log("loot", fmt(T("forage"), { ref: heroRef(), g: g }));
     return;
@@ -2193,7 +2199,7 @@ function resolveExtraAction(id) {
       game.quest.count += 1;
     } else if (roll < 0.7) {
       const g = randBetween(10, 30) + game.level * 2;
-      game.gold += g;
+      addGold(g);
       log("loot", fmt(T("digFound"), { ref: heroRef(), g: g }));
       game.quest.count += 1;
     } else {
@@ -2365,7 +2371,7 @@ function sellAllInventory() {
   if (!game.inventory.length) return;
   let total = 0;
   game.inventory.forEach(function (it) { total += sellPrice(it); });
-  game.gold += total;
+  addGold(total);
   log("loot", fmt(T("soldAll"), { ref: heroRef(), n: game.inventory.length, g: total }));
   game.inventory = [];
 }
@@ -2661,7 +2667,7 @@ function migrateSave(g) {
   if (g.combatsLost == null) g.combatsLost = 0;
   if (g.shopping == null) g.shopping = false;
   if (g.pendingEvent == null) g.pendingEvent = null;
-  if (typeof g.gold === "number") g.gold = Math.round(g.gold);
+  if (typeof g.gold === "number") g.gold = Math.min(GOLD_CAP, Math.round(g.gold));
   if (g.currentAct == null) g.currentAct = actFromHours((g.totalTime || 0) / 3600);
   if (g.questZone == null) g.questZone = Math.min(ZONES.length - 1, actFromHours((g.totalTime || 0) / 3600) - 1);
   if (g.mp == null) g.mp = 20 + (g.stats ? g.stats.wis * 4 : 20);
