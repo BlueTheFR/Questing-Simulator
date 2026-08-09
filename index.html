@@ -1304,6 +1304,7 @@ const MIN_ACTION = 3;       // durée d'action minimale (s)
 const MAX_ACTION = 25;      // durée d'action maximale (s)
 const XP_K = 0.37;          // Gain XP « Progress Quest » : × niveau², coût 80×niveau³ → niveau 50 en ~1 mois
 const XP_CAP = 100;         // Niveau plafond : au-delà, besoin + gain d'XP constants (pas d'overflow)
+const XP_CAP_NEED = 8000000; // Besoin d'XP figé au niveau 100+ : ~1h par niveau
 const GOLD_CAP = 999999;    // Plafond d'or : aucun gain ne dépasse ce montant
 const SAVE_KEY = "questingSimulatorWin95Save";
 const SAVE_INTERVAL = 30000; // 30 secondes
@@ -2268,7 +2269,8 @@ function checkLevelUp() {
 }
 
 function xpNeeded(lvl) {
-  return Math.floor(1000 * (Math.min(lvl, XP_CAP) / 10) ** 3);
+  if (lvl >= XP_CAP) return XP_CAP_NEED;
+  return Math.floor(1000 * (lvl / 10) ** 3);
 }
 
 function titleForLevel(lvl) {
