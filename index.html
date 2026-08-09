@@ -403,7 +403,7 @@ const STRINGS = {
     trapDisarm: "{ref} désamorce habilement un piège.",
     digFound: "{ref} déniche un petit trésor dans les décombres (+{g} or).",
     digNothing: "{ref} ne trouve que des gravats sans intérêt.",
-    levelUp: "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau {l} (+1 à tous les attributs).",
+    levelUp: "NIVEAU SUPÉRIEUR ! Vous êtes désormais niveau {l} (+1 à tous les attributs, +1 en {s}).",
     newTitle: "Nouveau titre : {t}",
     bossTitle: "Tueur de boss (niv. {n})",
     bossTitleF: "Tueuse de boss (niv. {n})",
@@ -494,7 +494,7 @@ const STRINGS = {
     trapDisarm: "{ref} deftly disarms a trap.",
     digFound: "{ref} finds a little treasure in the rubble (+{g} gold).",
     digNothing: "{ref} only finds uninteresting rubble.",
-    levelUp: "LEVEL UP! You are now level {l} (+1 to all attributes).",
+    levelUp: "LEVEL UP! You are now level {l} (+1 to all attributes, +1 to {s}).",
     newTitle: "New title: {t}",
     bossTitle: "Boss Slayer (lvl. {n})",
     slayerTitle: "Slayer of {m} (lvl. {n})",
@@ -1303,6 +1303,7 @@ const RETREAT_MSGS = [
 const MIN_ACTION = 3;       // durée d'action minimale (s)
 const MAX_ACTION = 25;      // durée d'action maximale (s)
 const XP_K = 0.37;          // Gain XP « Progress Quest » : × niveau², coût 80×niveau³ → niveau 50 en ~1 mois
+const XP_CAP = 100;         // Niveau plafond : au-delà, besoin + gain d'XP constants (pas d'overflow)
 const SAVE_KEY = "questingSimulatorWin95Save";
 const SAVE_INTERVAL = 30000; // 30 secondes
 const TICK_MS = 1000;
@@ -1533,6 +1534,7 @@ function newGame() {
     spells: [],
     killsByMonster: {},
     bossKills: 0,
+    primaryBonusApplied: true,
     gearPlus: {},
     gearLvl: 0,
     equipped: { arme: null, tete: null, torse: null, jambes: null, pieds: null, mains: null, anneau: null, amule: null },
@@ -1656,7 +1658,7 @@ function startQuest() {
 }
 
 function questXp(q) {
-  return Math.max(1, Math.round(XP_K * game.level * game.level * xpMultiplier() * (q.need / 5) * (QUEST_TYPE_XP[q.type] || 1)));
+  return Math.max(1, Math.round(XP_K * xpLevel() * xpLevel() * xpMultiplier() * (q.need / 5) * (QUEST_TYPE_XP[q.type] || 1)));
 }
 
 function completeQuest() {
@@ -1778,8 +1780,11 @@ function spellIndex(name) {
 function primaryStat() { return game.stats[game.class.primary]; }
 function secondaryStat() { return game.stats[game.class.secondary]; }
 
+function xpLevel() { return Math.min(game.level, XP_CAP); }
+
 function xpMultiplier() {
-  return 1 + Math.max(0, primaryStat() - 8) * 0.04;
+  const frozen = game.stats[game.class.primary] - 2 * Math.max(0, game.level - XP_CAP);
+  return 1 + Math.max(0, frozen - 8) * 0.04;
 }
 
 function spellPower() {
@@ -1945,7 +1950,7 @@ function resolveAction() {
   const heroWins = Math.random() < Math.max(0.08, Math.min(0.97, chance));
 
   if (heroWins) {
-    const xpGain = Math.max(1, Math.round(XP_K * game.level * game.level * (0.8 + Math.random() * 0.6) * xpMultiplier()));
+    const xpGain = Math.max(1, Math.round(XP_K * xpLevel() * xpLevel() * (0.8 + Math.random() * 0.6) * xpMultiplier()));
     const goldGain = randBetween(mons.gold[0], mons.gold[1]);
     game.xp += xpGain;
     game.gold += goldGain;
@@ -2122,7 +2127,7 @@ function applyEvent(e) {
       log("event", eventText(e) + " " + fmt(T("findsInv"), { ref: heroRef(), i: itemDisplayName(item) }));
     }
   } else if (e.kind === "mimic") {
-    const x = Math.max(1, Math.round(XP_K * game.level * game.level * xpMultiplier()));
+    const x = Math.max(1, Math.round(XP_K * xpLevel() * xpLevel() * xpMultiplier()));
     const g = randBetween(10, 40);
     game.xp += x;
     game.gold += g;
@@ -2246,9 +2251,10 @@ function checkLevelUp() {
     game.xp -= needed;
     game.level += 1;
     STAT_ORDER.forEach(function (k) { game.stats[k] += 1; });
+    game.stats[game.class.primary] += 1;
     game.maxHp += 15 + game.stats.con;
     game.hp = maxHpTotal();
-    log("level", fmt(T("levelUp"), { l: game.level }));
+    log("level", fmt(T("levelUp"), { l: game.level, s: statLabel(game.class.primary) }));
     log("system", fmt(T("newTitle"), { t: killTitle() }));
     checkSpellLearning();
     checkLevelUp();
@@ -2256,7 +2262,7 @@ function checkLevelUp() {
 }
 
 function xpNeeded(lvl) {
-  return Math.floor(1000 * (lvl / 10) ** 3);
+  return Math.floor(1000 * (Math.min(lvl, XP_CAP) / 10) ** 3);
 }
 
 function titleForLevel(lvl) {
@@ -2663,6 +2669,12 @@ function migrateSave(g) {
     g.quest.need = randBetween(10, 25);
     if (g.quest.count == null) g.quest.count = 0;
   }
+  if (!g.primaryBonusApplied) {
+    if (g.level > 1 && g.stats && g.class && g.class.primary) {
+      g.stats[g.class.primary] += g.level - 1;
+    }
+    g.primaryBonusApplied = true;
+  }
   return g;
 }
 
@@ -2716,6 +2728,7 @@ function load() {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.version === VERSION && parsed.name) {
         game = migrateSave(parsed);
+        save();
         lang = game.lang || "en";
         rebuildLogFromSave();
         log("system", fmt(T("loadOk"), { n: game.name }));
