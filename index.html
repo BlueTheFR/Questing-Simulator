@@ -324,7 +324,7 @@
 <footer class="statusbar">
   <span id="statusText">Ready</span>
   <span style="display:flex;align-items:center;gap:8px;">
-    <button class="winbtn" id="langBtn" title="Switch language / Changer de langue">EN</button>
+    <button class="winbtn" id="langBtn" title="Switch language / Changer de langue">🇬🇧</button>
     <span id="clockBottom">--:--</span>
   </span>
 </footer>
@@ -563,7 +563,7 @@ function setLanguage(l) {
   lang = next;
   document.documentElement.lang = lang;
   const btn = document.getElementById("langBtn");
-  if (btn) btn.textContent = lang === "en" ? "EN" : "FR";
+  if (btn) btn.textContent = lang === "en" ? "🇬🇧" : "🇫🇷";
   applyStaticText();
   if (game) {
     game.lang = lang;
@@ -596,7 +596,7 @@ function applyStaticText() {
   const rn = document.getElementById("randNameBtn");
   if (rn) rn.title = T("randNameTitle");
   const lb = document.getElementById("langBtn");
-  if (lb) lb.textContent = lang === "en" ? "EN" : "FR";
+  if (lb) lb.textContent = lang === "en" ? "🇬🇧" : "🇫🇷";
 }
 
 /* ============================================================
@@ -1802,7 +1802,7 @@ function heroPower() {
 }
 
 function weaponDamage() {
-  let d = 2 + Math.floor(game.level * 1.5) + Math.floor(game.stats.str / 2);
+  let d = 2 + Math.floor(game.level * 1.5) + Math.floor(primaryStat() / 2);
   for (const k in game.equipped) {
     if (game.equipped[k]) d += game.equipped[k].dmg;
   }
@@ -1814,7 +1814,7 @@ function armorRating() {
   for (const k in game.equipped) {
     if (game.equipped[k]) a += game.equipped[k].armor;
   }
-  return a + Math.floor(game.stats.con / 3);
+  return a + Math.floor(game.stats.str / 3);
 }
 
 function equipHpBonus() {
