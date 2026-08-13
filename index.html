@@ -2020,19 +2020,24 @@ function doShopping() {
   game.gearLvl += 1;
   const discount = Math.max(0.5, 1 - game.stats.cha * 0.02);
   let bought = 0;
+  let soldEq = 0;
   for (const slot in SLOT_LABELS) {
     const item = makeShopItemForSlot(slot);
     const price = Math.max(1, Math.round(Math.floor((item.dmg + item.armor) * 3 + (item.hp + item.mp) * 2 + item.level * 2) * discount));
-    if (game.gold >= price) {
-      game.gold -= price;
-      const old = game.equipped[slot];
-      if (old) game.inventory.push(old);
-      game.equipped[slot] = item;
-      bought += 1;
+    const old = game.equipped[slot];
+    if (old && gearScore(item) <= gearScore(old)) continue;
+    const oldVal = old ? sellPrice(old) : 0;
+    if (game.gold + oldVal < price) continue;
+    game.gold -= price;
+    if (old) {
+      addGold(oldVal);
+      soldEq += 1;
     }
+    game.equipped[slot] = item;
+    bought += 1;
   }
   clampVitals();
-  log("loot", fmt(T("shopLine"), { s: sold, b: bought }));
+  log("loot", fmt(T("shopLine"), { s: sold + soldEq, b: bought }));
 }
 
 function makeShopItemForSlot(slot) {
@@ -2379,12 +2384,13 @@ function generateEquip(mLevel) {
   return item;
 }
 
+function gearScore(i) { return i.dmg * 1.6 + i.armor + (i.hp || 0) + (i.mp || 0); }
+
 function autoEquip(item) {
   if (item.kind !== "equip") return false;
   const cur = game.equipped[item.slot];
   if (!cur) { game.equipped[item.slot] = item; clampVitals(); return true; }
-  const score = function (i) { return i.dmg * 1.6 + i.armor + (i.hp || 0) + (i.mp || 0); };
-  if (score(item) > score(cur) * 1.05) {
+  if (gearScore(item) > gearScore(cur) * 1.05) {
     const old = cur;
     game.equipped[item.slot] = item;
     game.inventory.push(old);
