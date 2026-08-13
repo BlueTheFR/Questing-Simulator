@@ -709,6 +709,15 @@ const TR_EN = {
   "la guilde des voleurs": "the thieves' guild", "le bibliothécaire grognon": "the grumpy librarian",
   "la fermière du plateau": "the farmer's wife on the plateau", "le dragon (méfiant)": "the dragon (suspicious)",
   "la taupe archiviste": "the archivist mole",
+  "un mouton": "a sheep", "un cochon gras": "a fat pig", "une chèvre têtue": "a stubborn goat",
+  "une oie bruyante": "a noisy goose", "un colporteur chargé": "an overloaded peddler",
+  "une vache perdue": "a lost cow", "le dragonnet (bébé)": "the (baby) dragonling",
+  "la grand-mère du sorcier": "the wizard's grandmother", "un troupeau de canards": "a flock of ducks",
+  "le maire (ivre)": "the (drunk) mayor",
+  "le moulin": "the mill", "la tour": "the tower", "la taverne": "the tavern",
+  "le marché": "the market", "la ferme voisine": "the neighboring farm", "le pont": "the bridge",
+  "le château": "the castle", "la cave à vin": "the wine cellar", "l'étable": "the barn",
+  "le port": "the harbor",
   "un Rat géant": "a Giant Rat", "des ninjas": "some ninjas", "les lémures": "the lemures",
   "un gobelin contrarié": "an annoyed goblin", "la chimère": "the chimera", "un escalier": "a staircase",
   "la chaussette sacrée": "the sacred sock", "un orc": "an orc", "le trèfle à cinq feuilles": "the five-leaf clover",
@@ -981,6 +990,17 @@ const DELIVER_RECIPIENTS = [
   "le nain du pont", "le Canadien (sur son élan)", "la sorcière de la forêt",
   "le capitaine des gardes", "le roi (déguisé en roturier)", "la guilde des voleurs",
   "le bibliothécaire grognon", "la fermière du plateau", "le dragon (méfiant)", "la taupe archiviste"
+];
+
+const ESCORT_TARGETS = [
+  "un mouton", "un cochon gras", "une chèvre têtue", "une oie bruyante",
+  "un colporteur chargé", "une vache perdue", "le dragonnet (bébé)",
+  "la grand-mère du sorcier", "un troupeau de canards", "le maire (ivre)"
+];
+
+const ESCORT_DESTINATIONS = [
+  "le moulin", "la tour", "la taverne", "le marché", "la ferme voisine",
+  "le pont", "le château", "la cave à vin", "l'étable", "le port"
 ];
 
 /* Objets uniques, récompenses de quête */
@@ -1571,10 +1591,11 @@ function clampStat(v) { return Math.max(3, v); }
    QUÊTES ABSURDES (Deliver / Exterminate / Fetch / Seek)
    ============================================================ */
 
-const QUEST_TYPES = ["deliver", "exterminate", "fetch", "seek"];
-const QUEST_TYPE_LABELS = { deliver: "Livraison", exterminate: "Extermination", fetch: "Récupération", seek: "Recherche", boss: "Boss" };
-const QUEST_TYPE_LABELS_EN = { deliver: "Delivery", exterminate: "Extermination", fetch: "Fetch", seek: "Seek", boss: "Boss" };
-const QUEST_TYPE_XP = { deliver: 1, exterminate: 1.5, fetch: 1.25, seek: 0.75, boss: 1 };
+const QUEST_TYPES = ["deliver", "exterminate", "fetch", "seek", "escort"];
+const QUEST_TYPE_LABELS = { deliver: "Livraison", exterminate: "Extermination", fetch: "Récupération", seek: "Recherche", escort: "Escorte", boss: "Boss" };
+const QUEST_TYPE_LABELS_EN = { deliver: "Delivery", exterminate: "Extermination", fetch: "Fetch", seek: "Seek", escort: "Escort", boss: "Boss" };
+const QUEST_TYPE_XP = { deliver: 1, exterminate: 1.5, fetch: 1.25, seek: 0.75, escort: 0.6, boss: 1 };
+const QUEST_TYPE_GOLD = { deliver: 1, exterminate: 1, fetch: 1, seek: 1, escort: 2, boss: 1 };
 
 function questTypeLabel(t) { return lang === "en" ? (QUEST_TYPE_LABELS_EN[t] || t) : (QUEST_TYPE_LABELS[t] || t); }
 
@@ -1592,6 +1613,7 @@ function questText(q) {
     if (q.type === "deliver") return "Deliver " + tr(q.item ? q.item.name : "") + " to " + tr(q.recipient || "") + ".";
     if (q.type === "fetch") return "Fetch " + tr(q.item ? q.item.name : "") + ".";
     if (q.type === "seek") return "Search for " + tr(q.item ? q.item.name : "") + ".";
+    if (q.type === "escort") return "Escort " + tr(q.recipient || "") + " to " + tr(q.dest || "") + ".";
     return q.text || "";
   }
   if (q.type === "exterminate") return "Extermine des " + monsterPlural(q.target) + ".";
@@ -1599,6 +1621,7 @@ function questText(q) {
   if (q.type === "deliver") return "Remets " + (q.item ? q.item.name : "") + " " + prepTo(q.recipient || "") + ".";
   if (q.type === "fetch") return "Rapporte " + (q.item ? q.item.name : "") + ".";
   if (q.type === "seek") return "Cherche " + (q.item ? q.item.name : "") + ".";
+  if (q.type === "escort") return "Escorte " + (q.recipient || "") + " " + prepTo(q.dest || "") + ".";
   return q.text || "";
 }
 
@@ -1651,6 +1674,10 @@ function startQuest() {
     const it = pick(QUEST_ITEMS);
     q.item = it;
     q.recipient = pick(DELIVER_RECIPIENTS);
+  } else if (type === "escort") {
+    q.recipient = pick(ESCORT_TARGETS);
+    q.dest = pick(ESCORT_DESTINATIONS);
+    q.need = randBetween(20, 60);
   } else if (type === "fetch") {
     q.item = pick(QUEST_ITEMS);
   } else { // seek
@@ -1672,7 +1699,8 @@ function completeQuest() {
   game.questsDone += 1;
   const isBoss = game.quest.type === "boss";
   const bonusXp = questXp(game.quest);
-  const bonusGold = (isBoss ? 100 : 30) + game.level * (isBoss ? 24 : 12);
+  const goldMult = QUEST_TYPE_GOLD[game.quest.type] || 1;
+  const bonusGold = ((isBoss ? 100 : 30) + game.level * (isBoss ? 24 : 12)) * goldMult;
   game.xp += bonusXp;
   addGold(bonusGold);
   game.treasures += 1;
@@ -2011,13 +2039,14 @@ function makeShopItemForSlot(slot) {
   const pool = EQUIP_BASES.filter(function (t) { return t.slot === slot; });
   const t = pick(pool);
   const lvl = Math.max(1, Math.round(game.level * (0.8 + Math.random() * 0.4) + game.gearLvl * 0.5));
+  const plus = Math.max(0, lvl - 1);
   const item = {
     id: uid(),
     kind: "equip",
     slot: t.slot,
     base: t.base,
     level: lvl,
-    plus: 0,
+    plus: plus,
     dmg: 0,
     armor: 0
   };
@@ -2025,10 +2054,12 @@ function makeShopItemForSlot(slot) {
   item.armor = Math.max(1, Math.round((randBetween(t.armor[0], t.armor[1]) + lvl * 0.35) * (0.9 + Math.random() * 0.2)));
   item.hp = slotHp(item.slot, lvl);
   item.mp = slotMp(item.slot, lvl);
+  item.dmg += plus;
+  item.armor += plus;
   if (item.slot !== "arme") item.dmg = 0;
   if (item.slot === "arme") item.armor = 0;
   applyMutation(item);
-  item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (item.mutation ? " " + item.mutation : "");
+  item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " " + item.mutation : "");
   return item;
 }
 
@@ -2323,8 +2354,8 @@ function maybeDropItem(mons) {
 
 function generateEquip(mLevel) {
   const t = pick(EQUIP_BASES);
-  const lvl = Math.max(1, Math.round(mLevel * (0.8 + Math.random() * 0.5)));
-  const plus = game.gearPlus[t.base] || 0;
+  const lvl = Math.max(1, Math.round(game.level * (0.85 + Math.random() * 0.3)));
+  const plus = Math.max(0, lvl - 1);
   const item = {
     id: uid(),
     kind: "equip",
@@ -2345,7 +2376,6 @@ function generateEquip(mLevel) {
   if (item.slot === "arme") item.armor = 0;
   applyMutation(item);
   item.name = (item.mutation2 ? item.mutation2 + " " : "") + t.base + (plus > 0 ? " +" + plus : "") + (item.mutation ? " " + item.mutation : "");
-  game.gearPlus[t.base] = plus + 1;
   return item;
 }
 
