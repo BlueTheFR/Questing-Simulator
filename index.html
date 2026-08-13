@@ -2038,7 +2038,7 @@ function doShopping() {
 function makeShopItemForSlot(slot) {
   const pool = EQUIP_BASES.filter(function (t) { return t.slot === slot; });
   const t = pick(pool);
-  const lvl = Math.max(1, Math.round(game.level * (0.8 + Math.random() * 0.4) + game.gearLvl * 0.5));
+  const lvl = Math.max(1, Math.min(game.level, Math.round(game.level * (0.8 + Math.random() * 0.4) + game.gearLvl * 0.5)));
   const plus = Math.max(0, lvl - 1);
   const item = {
     id: uid(),
@@ -2354,7 +2354,7 @@ function maybeDropItem(mons) {
 
 function generateEquip(mLevel) {
   const t = pick(EQUIP_BASES);
-  const lvl = Math.max(1, Math.round(game.level * (0.85 + Math.random() * 0.3)));
+  const lvl = Math.max(1, Math.min(game.level, Math.round(game.level * (0.85 + Math.random() * 0.3))));
   const plus = Math.max(0, lvl - 1);
   const item = {
     id: uid(),
